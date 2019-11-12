@@ -24,8 +24,17 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         A list of locations representing the car path
         A list of (location, [homes]) representing drop-offs
     """
-    pass
+    if params[0] == 'bad':
+        return bad_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    else:
+        pass
+
+# makes everyone walk back home.
+def bad_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    car_path = [int(starting_car_location)]
     
+    drop_off = {int(starting_car_location): [int(h) for h in list_of_homes]}
+    return car_path, drop_off
 
 """
 ======================================================================
@@ -43,7 +52,7 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
         string += list_locs[node] + ' '
     string = string.strip()
     string += '\n'
-
+    
     dropoffNumber = len(dropoff_mapping.keys())
     string += str(dropoffNumber) + '\n'
     for dropoff in dropoff_mapping.keys():
