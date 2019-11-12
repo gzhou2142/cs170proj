@@ -10,12 +10,20 @@ import itertools
 # Generate a random graph with NUM_POINTS number of vertices
 # SIZE_X AND SIZE_Y set the limit to the distances between verticies
 def graph_generate(num_points, size_x, size_y, seed = None):
-    graph = nx.gnm_random_graph(num_points, random.randint(num_points - 1, num_points * num_points), seed = seed)
+    graph = nx.gnm_random_graph(num_points, random.randint(num_points - 1, (num_points * (num_points- 1)/2)), seed = seed)
     random.seed(seed)
-    verticies = []
+    coords = set()
+    
     # for i in range(num_points):
     #     verticies.append( ((random.randint(0, size_x), random.randint(0, size_y))))
-    verticies = list(itertools.product(range(size_x), range(size_y)))
+    while(len(coords) < num_points):
+        x, y = random.randint(0, size_x), random.randint(0, size_y)
+        while ((x,y) in coords):
+            x, y = random.randint(0, size_x), random.randint(0, size_y)
+        coords.add((x,y))
+
+    #verticies = list(itertools.product(range(size_x), range(size_y)))
+    verticies = list(coords)
     verticies = random.sample(verticies, num_points)
     for e in graph.edges:
         graph[e[0]][e[1]]['weight'] = distance(verticies[e[0]], verticies[e[1]])

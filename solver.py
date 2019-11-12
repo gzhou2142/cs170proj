@@ -32,7 +32,6 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
 # makes everyone walk back home.
 def bad_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     car_path = [int(starting_car_location)]
-    
     drop_off = {int(starting_car_location): [int(h) for h in list_of_homes]}
     return car_path, drop_off
 
