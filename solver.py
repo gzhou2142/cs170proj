@@ -37,8 +37,11 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
 makes everyone walk back home.
 """ 
 def naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     car_path = [int(starting_car_location)]
     drop_off = {int(starting_car_location): [int(h) for h in list_of_homes]}
+    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    utils.write_data_to_file('logs/naive.log', [cost], separator = '\n', append = True)
     return car_path, drop_off
 """
 drop of everyone at their homes
@@ -48,6 +51,8 @@ def greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjac
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     car_path = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
+    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    utils.write_data_to_file('logs/greedy.log', [cost], separator = '\n', append = True)
     return car_path, drop_off
 """
 finds a tour greedily
@@ -77,11 +82,7 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
         shortestLocalPath = nx.shortest_path(G, source = int(current_node), target = int(closestNode), weight = 'weight')
         tour.extend(shortestLocalPath)
         set_of_locations.remove(closestNode)
-    #tour.append(int(starting_car_location))
     tour.extend(nx.shortest_path(G, source = int(tour.pop()), target = int(starting_car_location), weight = 'weight'))
-    # for i in range(len(tour)):
-    #     tour[i] = int(tour[i])
-    #print(tour)
     return tour
 
 """
@@ -156,10 +157,19 @@ def solve_from_file(input_file, output_directory, params=[]):
 
 
 def solve_all(input_directory, output_directory, params=[]):
+    if params[0] == 'naive':
+        print("Using naive method")
+        print("Clearing logs")
+        utils.clear_file('logs/naive.log')
+    elif params[0] == 'greedy':
+        print('Using greedy method')
+        print("Clearning logs")
+        utils.clear_file('logs/greedy.log')
     input_files = utils.get_files_with_extension(input_directory, 'in')
 
     for input_file in input_files:
         solve_from_file(input_file, output_directory, params=params)
+    print()
 
 
 if __name__=="__main__":

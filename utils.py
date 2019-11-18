@@ -46,3 +46,8 @@ def append_next_line(file):
 def append_data_next_line(file, data, separator, append = False):
     write_data_to_file(file, data, separator, append)
     write_to_file(file, '\n', append = 'a')
+
+def clear_logs():
+    print('Clearing Log Files')
+    clear_file('logs/naive.log')
+    clear_file('logs/greedy.log')

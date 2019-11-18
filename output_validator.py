@@ -105,6 +105,8 @@ def tests(input_data, output_data, params=[]):
     if cost != 'infinite':
         cost, solution_message = cost_of_solution(G, car_cycle, dropoffs)
         message += solution_message
+    
+    
 
     return cost, message
 
