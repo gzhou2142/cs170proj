@@ -26,7 +26,6 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         A list of locations representing the car path
         A list of (location, [homes]) representing drop-offs
     """
-    
     if params[0] == 'naive':
         return naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     elif params[0] == 'greedy':
@@ -47,10 +46,8 @@ drop of everyone at their homes
 def greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
-    car_path = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path)
+    car_path = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
-    #   print(car_path)
-    #print(drop_off)
     return car_path, drop_off
 """
 finds a tour greedily
@@ -61,7 +58,7 @@ Input:
 Output:
     A list that contains the visited locations in order
 """ 
-def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_path):
+def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_path, G):
     if len(locations) == 1:
         return [starting_car_location]
     shortest = all_pairs_shortest_path
@@ -69,16 +66,19 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
     tour = [int(starting_car_location)]
     set_of_locations.remove(starting_car_location)
     while len(set_of_locations) > 0:
-        current_node = tour[-1]
+        current_node = tour.pop()
         closestLen = float('inf')
         closestNode = None
         for n in set_of_locations:
             if shortest[int(current_node)][int(n)] < closestLen:
                 closestLen = shortest[int(current_node)][int(n)]
                 closestNode = n
-        tour.append(int(closestNode))
+
+        shortestLocalPath = nx.shortest_path(G, source = int(current_node), target = int(closestNode), weight = 'weight')
+        tour.extend(shortestLocalPath)
         set_of_locations.remove(closestNode)
-    tour.append(int(starting_car_location))
+    #tour.append(int(starting_car_location))
+    tour.extend(nx.shortest_path(G, source = int(tour.pop()), target = int(starting_car_location), weight = 'weight'))
     # for i in range(len(tour)):
     #     tour[i] = int(tour[i])
     #print(tour)
