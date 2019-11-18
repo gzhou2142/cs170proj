@@ -4,8 +4,10 @@ sys.path.append('..')
 sys.path.append('../..')
 import argparse
 import utils
-
+import numpy as np
+import networkx as nx
 from student_utils import *
+import student_utils
 """
 ======================================================================
   Complete the following function.
@@ -24,16 +26,90 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         A list of locations representing the car path
         A list of (location, [homes]) representing drop-offs
     """
-    if params[0] == 'bad':
-        return bad_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    
+    if params[0] == 'naive':
+        return naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    elif params[0] == 'greedy':
+        return greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     else:
         pass
 
-# makes everyone walk back home.
-def bad_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+"""
+makes everyone walk back home.
+""" 
+def naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     car_path = [int(starting_car_location)]
     drop_off = {int(starting_car_location): [int(h) for h in list_of_homes]}
     return car_path, drop_off
+"""
+drop of everyone at their homes
+"""
+def greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    all_pairs_shortest_path = dict(nx.floyd_warshall(G))
+    car_path = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
+    #   print(car_path)
+    #print(drop_off)
+    return car_path, drop_off
+"""
+finds a tour greedily
+Input:
+    locations: a list of locations to visit
+    starting_car_location: starting location for car
+    adjacency_matrix: graph representation
+Output:
+    A list that contains the visited locations in order
+""" 
+def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_path):
+    if len(locations) == 1:
+        return [starting_car_location]
+    shortest = all_pairs_shortest_path
+    set_of_locations = set(locations)
+    tour = [int(starting_car_location)]
+    set_of_locations.remove(starting_car_location)
+    while len(set_of_locations) > 0:
+        current_node = tour[-1]
+        closestLen = float('inf')
+        closestNode = None
+        for n in set_of_locations:
+            if shortest[int(current_node)][int(n)] < closestLen:
+                closestLen = shortest[int(current_node)][int(n)]
+                closestNode = n
+        tour.append(int(closestNode))
+        set_of_locations.remove(closestNode)
+    tour.append(int(starting_car_location))
+    # for i in range(len(tour)):
+    #     tour[i] = int(tour[i])
+    #print(tour)
+    return tour
+
+"""
+returns optimal drop off mapping
+Input:
+    tour: a list that contains the tour
+    list_of_homes: list of homes
+    all_pairs_shortest_path: shortest paths between all pairs of vertices
+Output:
+    an optimal drop off mapping of homes to the vertices visited in the tour
+""" 
+def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
+    drop_off_mapping = dict()
+    shortest = all_pairs_shortest_path
+    for home in list_of_homes:
+        minLoc = None
+        minDist = float('inf')
+        for t in tour:
+            if shortest[int(home)][int(t)] < minDist:
+                minDist = shortest[int(home)][int(t)]
+                minLoc = t
+        if int(minLoc) in drop_off_mapping:
+            drop_off_mapping[int(minLoc)] = drop_off_mapping[int(minLoc)].append(int(home))
+        else:
+            drop_off_mapping[int(minLoc)] = [int(home)]
+    return drop_off_mapping
+
+
 
 """
 ======================================================================
