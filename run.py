@@ -14,7 +14,7 @@ def run(range):
     output_validator.validate_all_outputs('inputs/','outputs/')
 
  
-#run(1000)
+create_inputs(20000)
 # input_generator.generate_input('inputs/200.in', 200, 100, 500)
 # solver.solve_all('inputs/', 'outputs/', params = ['bad'])
 # output_validator.validate_all_outputs('inputs/','outputs/')

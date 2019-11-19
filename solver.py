@@ -30,6 +30,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         return naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     elif params[0] == 'greedy':
         return greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    elif params[0] == 'three_opt':
+        return three_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     else:
         pass
 
@@ -49,11 +51,25 @@ drop of everyone at their homes
 def greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
-    car_path = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
+    car_path, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/greedy.log', [cost], separator = '\n', append = True)
     return car_path, drop_off
+
+
+def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    all_pairs_shortest_path = dict(nx.floyd_warshall(G))
+    _, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
+    visit_order = three_opt(visit_order, all_pairs_shortest_path)
+    car_path = generate_full_path(visit_order, G)
+    drop_off = final_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
+    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    utils.write_data_to_file('logs/three_opt.log', [cost], separator = '\n', append = True)
+    #print(car_path, drop_off)
+    return car_path, drop_off
+
 """
 finds a tour greedily
 Input:
@@ -68,7 +84,9 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
         return [starting_car_location]
     shortest = all_pairs_shortest_path
     set_of_locations = set(locations)
+    set_of_locations.add(starting_car_location)
     tour = [int(starting_car_location)]
+    visitOrder = [int(starting_car_location)]
     set_of_locations.remove(starting_car_location)
     while len(set_of_locations) > 0:
         current_node = tour.pop()
@@ -81,9 +99,11 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
 
         shortestLocalPath = nx.shortest_path(G, source = int(current_node), target = int(closestNode), weight = 'weight')
         tour.extend(shortestLocalPath)
+        visitOrder.append(int(closestNode))
         set_of_locations.remove(closestNode)
     tour.extend(nx.shortest_path(G, source = int(tour.pop()), target = int(starting_car_location), weight = 'weight'))
-    return tour
+    visitOrder.append(int(starting_car_location))
+    return tour, visitOrder
 
 """
 returns optimal drop off mapping
@@ -110,6 +130,70 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
             drop_off_mapping[int(minLoc)] = [int(home)]
     return drop_off_mapping
 
+
+
+def reverse_segments(tour, i, j, k, shortest):
+    A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
+    d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
+    d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
+    d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
+    d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
+    d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
+    d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
+    d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
+    d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
+
+    
+    swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
+    minSwap = min(swapList, key = lambda x: x[0])
+    if minSwap[1] - d0 == 0:
+        return 0
+    elif minSwap[1] == 1:
+        tour[j:k] = reversed(tour[j:k])
+    elif minSwap[1] == 2:
+        tour[i:j] = reversed(tour[i:j])
+    elif minSwap[1] == 3:
+        tour[i:j] = reversed(tour[i:j])
+        tour[j:k] = reversed(tour[j:k])
+    elif minSwap[1] == 4:
+        tour = tour[:i] + tour[j:k] + tour[i:j] + tour[k:]
+    elif minSwap[1] == 5:
+        tour = tour[:i] + tour[j:k] + list(reversed(tour[i:j])) + tour[k:]
+    elif minSwap[1] == 6:
+        tour = tour[:i] + list(reversed(tour[j:k])) + tour[i:j] + tour[k:]
+    elif minSwap[1] == 7:
+        tour = tour[:i] + list(reversed(tour[j:k])) + list(reversed(tour[i:j])) + tour[k:]
+    
+    return -d0 + minSwap[0]
+
+def all_segments(tour):
+    segments = []
+    for i in range(1,len(tour) - 2):
+        for j in range(i+2, len(tour) - 1):
+            for k in range(j+2, len(tour)):
+                segments.append((i,j,k))
+    return segments
+
+def three_opt(tour, shortest):
+    #shortest = dict(nx.floyd_warshall(G))
+    while True:
+        delta = 0
+        for (i,j,k) in all_segments(tour):
+            delta += reverse_segments(tour, i, j, k, shortest)
+        print(delta)
+        if delta >= 0:
+            break
+    return tour
+
+def generate_full_path(tour, G):
+    #shortestLocalPath = nx.shortest_path(G, source = int(current_node), target = int(closestNode), weight = 'weight')
+    final_tour = [tour[0]]
+    tour[1:]
+    for t in tour:
+        current = final_tour.pop()
+        shortestLocalPath = nx.shortest_path(G, source = int(current, target = int(t), weight = 'weight'))
+        final_tour.extend(shortestLocalPath)
+    return final_tour
 
 
 """
