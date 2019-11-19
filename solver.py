@@ -57,18 +57,22 @@ def greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjac
     utils.write_data_to_file('logs/greedy.log', [cost], separator = '\n', append = True)
     return car_path, drop_off
 
-
+"""
+Uses the three opt heuristic to calculate a path that sends everyone home with no walking required.
+"""
 def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     _, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
     visit_order = three_opt(visit_order, all_pairs_shortest_path)
     car_path = generate_full_path(visit_order, G)
-    drop_off = final_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/three_opt.log', [cost], separator = '\n', append = True)
-    #print(car_path, drop_off)
     return car_path, drop_off
+
+def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    pass
 
 """
 finds a tour greedily
@@ -131,8 +135,10 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
     return drop_off_mapping
 
 
-
-def reverse_segments(tour, i, j, k, shortest):
+"""
+calculates biggest gain given a 3 edge swap
+"""
+def calculateGain(tour, i, j, k, shortest):
     A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
     d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
     d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
@@ -147,25 +153,33 @@ def reverse_segments(tour, i, j, k, shortest):
     swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
     minSwap = min(swapList, key = lambda x: x[0])
     if minSwap[1] - d0 == 0:
-        return 0
-    elif minSwap[1] == 1:
-        tour[j:k] = reversed(tour[j:k])
-    elif minSwap[1] == 2:
-        tour[i:j] = reversed(tour[i:j])
-    elif minSwap[1] == 3:
-        tour[i:j] = reversed(tour[i:j])
-        tour[j:k] = reversed(tour[j:k])
-    elif minSwap[1] == 4:
-        tour = tour[:i] + tour[j:k] + tour[i:j] + tour[k:]
-    elif minSwap[1] == 5:
-        tour = tour[:i] + tour[j:k] + list(reversed(tour[i:j])) + tour[k:]
-    elif minSwap[1] == 6:
-        tour = tour[:i] + list(reversed(tour[j:k])) + tour[i:j] + tour[k:]
-    elif minSwap[1] == 7:
-        tour = tour[:i] + list(reversed(tour[j:k])) + list(reversed(tour[i:j])) + tour[k:]
-    
-    return -d0 + minSwap[0]
+        return (0, 0)
 
+    return (-d0 + minSwap[0], minSwap[1])
+
+"""
+performs the 3 edge swap
+"""
+def move3(tour, i, j, k, case):
+    if case == 1:
+        tour[j:k] = reversed(tour[j:k])
+    elif case == 2:
+        tour[i:j] = reversed(tour[i:j])
+    elif case == 3:
+        tour[i:j] = reversed(tour[i:j])
+        tour[j:k] = reversed(tour[j:k])
+    elif case == 4:
+        tour = tour[:i] + tour[j:k] + tour[i:j] + tour[k:]
+    elif case == 5:
+        tour = tour[:i] + tour[j:k] + list(reversed(tour[i:j])) + tour[k:]
+    elif case == 6:
+        tour = tour[:i] + list(reversed(tour[j:k])) + tour[i:j] + tour[k:]
+    elif case == 7:
+        tour = tour[:i] + list(reversed(tour[j:k])) + list(reversed(tour[i:j])) + tour[k:]
+    return tour
+"""
+generates a list that contain all possible 3 edge combinations
+"""
 def all_segments(tour):
     segments = []
     for i in range(1,len(tour) - 2):
@@ -173,25 +187,51 @@ def all_segments(tour):
             for k in range(j+2, len(tour)):
                 segments.append((i,j,k))
     return segments
-
+"""
+best improving three opt
+"""
 def three_opt(tour, shortest):
-    #shortest = dict(nx.floyd_warshall(G))
     while True:
-        delta = 0
+        bestMove = None
+        bestGain = 0
+        bestCase = 0
         for (i,j,k) in all_segments(tour):
-            delta += reverse_segments(tour, i, j, k, shortest)
-        print(delta)
-        if delta >= 0:
+            currentGain, currentCase = calculateGain(tour, i, j, k, shortest)
+            if bestGain > currentGain:
+                bestGain = currentGain
+                bestCase = currentCase
+                bestMove = (i,j,k)
+        if bestGain >= -0.00001:
+            break
+        else:
+            i,j,k = bestMove
+            tour = move3(tour, i, j, k, bestCase)
+    return tour
+"""
+first improving three opt
+"""
+def three_opt_first(tour, shortest):
+    while True:
+        bestGain = 0
+        for (i,j,k) in all_segments(tour):
+            currentGain, currentCase = calculateGain(tour, i, j, k, shortest)
+            if currentGain < 0:
+                tour = move3(tour, i, j, k, currentCase)
+                bestGain = currentGain
+                break
+        if bestGain >= -0.00001:
             break
     return tour
 
+"""
+generates a full path
+"""
 def generate_full_path(tour, G):
-    #shortestLocalPath = nx.shortest_path(G, source = int(current_node), target = int(closestNode), weight = 'weight')
     final_tour = [tour[0]]
     tour[1:]
     for t in tour:
         current = final_tour.pop()
-        shortestLocalPath = nx.shortest_path(G, source = int(current, target = int(t), weight = 'weight'))
+        shortestLocalPath = nx.shortest_path(G, source = int(current), target = int(t), weight = 'weight')
         final_tour.extend(shortestLocalPath)
     return final_tour
 
@@ -249,6 +289,10 @@ def solve_all(input_directory, output_directory, params=[]):
         print('Using greedy method')
         print("Clearning logs")
         utils.clear_file('logs/greedy.log')
+    elif params[0] == 'three_opt':
+        print('Using three_opt method')
+        print("Clearning logs")
+        utils.clear_file('logs/three_opt.log')
     input_files = utils.get_files_with_extension(input_directory, 'in')
 
     for input_file in input_files:
