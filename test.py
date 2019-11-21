@@ -1,10 +1,10 @@
 import solver
 import networkx as nx
-tour = [0,1,2,3,4,5,0]
-segments = []
-for i,j,k in solver.all_segments(tour):
-    #print()
-    segments.append((i-1, i, j-1, j, k-1, k))
+# tour = [0,1,2,3,4,5,0]
+# segments = []
+# for i,j,k in solver.all_segments(tour):
+#     #print()
+#     segments.append((i-1, i, j-1, j, k-1, k))
 #print(segments)
 
 g = nx.Graph()
@@ -34,13 +34,14 @@ def cal_dist(tour):
         dist = dist + shortest[tour[i-1]][tour[i]]
     return dist
 
-tour = [0,3,4,1,2,5,0]
-#tour = [0,1,2,3,4,5,0]
-print(cal_dist(tour))
-solver.three_opt(tour, g)
-print(cal_dist(tour))
-solver.three_opt(tour, g)
-print(cal_dist(tour))
-solver.three_opt(tour, g)
-print(cal_dist(tour))
-print(tour)
+# tour = [0,3,4,1,2,5,0]
+# #tour = [0,1,2,3,4,5,0]
+# print(cal_dist(tour))
+# tour = solver.three_opt(tour, shortest)
+# print(cal_dist(tour))
+# tour = solver.three_opt(tour, shortest)
+# print(cal_dist(tour))
+# tour = solver.three_opt(tour, shortest)
+# print(cal_dist(tour))
+# print(tour)
+print(solver.ant_colony_tour(g))

@@ -1,13 +1,18 @@
+
 import os
 import sys
+print(sys.path)
 sys.path.append('..')
 sys.path.append('../..')
+sys.path.append('C:\\program files (x86)\\python\\lib\\site-packages')
 import argparse
 import utils
 import numpy as np
 import networkx as nx
 from student_utils import *
 import student_utils
+import acopy as aco
+
 """
 ======================================================================
   Complete the following function.
@@ -32,6 +37,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         return greedy_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     elif params[0] == 'three_opt':
         return three_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    elif params[0] == 'ant_colony':
+        return ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     else:
         pass
 
@@ -73,6 +80,18 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
 
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     pass
+
+def christofides(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    pass
+
+def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    all_pairs_shortest_path = dict(nx.floyd_warshall(G))
+    _, tour = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G) 
+    tour = tour[1:]
+    newGraph = build_tour_graph(G, tour, all_pairs_shortest_path)
+    solution = ant_colony_tour(newGraph)
+    print(solution)
 
 """
 finds a tour greedily
@@ -235,7 +254,24 @@ def generate_full_path(tour, G):
         final_tour.extend(shortestLocalPath)
     return final_tour
 
+def build_tour_graph(G, tour, all_pairs_shortest_path):
+    shortest = all_pairs_shortest_path
+    newGraph = nx.Graph()
+    for t in tour:
+        newGraph.add_node(int(t))
+    for i in range(len(tour)):
+        for j in range(i, len(tour)):
+            if int(tour[i]) == int(tour[j]):
+                continue
+            else:
+                newGraph.add_edge(int(tour[i]), int(tour[j]), weight = shortest[int(tour[i])][int(tour[j])])
+    return newGraph
 
+def ant_colony_tour(G):
+    solver = aco.Solver(rho=0.01, q = 1)
+    colony = aco.Colony(alpha = 1, beta = 3)
+    tour = solver.solve(G, colony, limit = 1000)
+    return tour
 """
 ======================================================================
    No need to change any code below this line
