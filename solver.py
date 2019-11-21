@@ -1,10 +1,9 @@
 
 import os
 import sys
-print(sys.path)
 sys.path.append('..')
 sys.path.append('../..')
-sys.path.append('C:\\program files (x86)\\python\\lib\\site-packages')
+#sys.path.append('C:\\program files (x86)\\python\\lib\\site-packages')
 import argparse
 import utils
 import numpy as np
@@ -76,6 +75,8 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/three_opt.log', [cost], separator = '\n', append = True)
+    print(len(list_of_locations),'locations', 'three_opt:', cost)
+    #print(car_path)
     return car_path, drop_off
 
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
@@ -90,8 +91,16 @@ def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacenc
     _, tour = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G) 
     tour = tour[1:]
     newGraph = build_tour_graph(G, tour, all_pairs_shortest_path)
-    solution = ant_colony_tour(newGraph)
-    print(solution)
+    solution = ant_colony_tour(newGraph, starting_car_location)
+    car_path = generate_full_path(solution, G)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
+    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
+    print(len(list_of_locations),'locations', 'ant_colony:', cost)
+    #print(car_path)
+
+    return car_path, drop_off
+    #print(solution.nodes)
 
 """
 finds a tour greedily
@@ -267,11 +276,14 @@ def build_tour_graph(G, tour, all_pairs_shortest_path):
                 newGraph.add_edge(int(tour[i]), int(tour[j]), weight = shortest[int(tour[i])][int(tour[j])])
     return newGraph
 
-def ant_colony_tour(G):
+def ant_colony_tour(G, start):
     solver = aco.Solver(rho=0.01, q = 1)
-    colony = aco.Colony(alpha = 1, beta = 3)
-    tour = solver.solve(G, colony, limit = 1000)
-    return tour
+    colony = aco.Colony(alpha = 1, beta = 5)
+    tour = solver.solve(G, colony, limit = 500, gen_size = 1000)
+    tour_list = tour.nodes
+    start_index = tour_list.index(int(start))
+    tour_list = tour_list[start_index:] + tour_list [:start_index] + [int(start)]
+    return tour_list
 """
 ======================================================================
    No need to change any code below this line
@@ -329,6 +341,10 @@ def solve_all(input_directory, output_directory, params=[]):
         print('Using three_opt method')
         print("Clearning logs")
         utils.clear_file('logs/three_opt.log')
+    elif params[0] == 'ant_colony':
+        print("Using ant colony optimization")
+        print("Clearing logs")
+        utils.clear_file("logs/ant_colony.log")
     input_files = utils.get_files_with_extension(input_directory, 'in')
 
     for input_file in input_files:
