@@ -11,6 +11,7 @@ import networkx as nx
 from student_utils import *
 import student_utils
 import acopy as aco
+import itertools
 
 """
 ======================================================================
@@ -39,6 +40,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         return three_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     elif params[0] == 'ant_colony':
         return ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
+    elif params[0] == 'greedy_clustering_three_opt':
+        return greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
     else:
         pass
 
@@ -81,11 +84,65 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     return car_path, drop_off
 
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
-    pass
+    def findsubsets(s,n):
+        result = []
+        for i in range(n):
+            ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
+            result.extend(ls)
+        return result
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    shortest = dict(nx.floyd_warshall(G))
+    tour = [int(starting_car_location)]
+    stops = [int(starting_car_location)]
+    remain_bus_stop = set([int(l) for l in list_of_locations])
+    remain_bus_stop.remove(int(starting_car_location))
+    
+    drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
+    min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    min_drive_cost =  calc_driving_cost(tour, shortest)
+    minCost = min_walk_cost + min_drive_cost
+    while True:
+        bestTour = None
+        bestStop = None
+        bestCost = minCost
+        bstops = findsubsets(remain_bus_stop, 3)
+        #print(bstops)
+        for bstop in bstops:
+            new_tour = stops + bstop
+            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
+            new_graph = build_tour_graph(G, new_tour, shortest)
+            _, new_tour = nearest_neighbor_tour(new_tour, starting_car_location, shortest, new_graph)
+            new_tour = three_opt(new_tour, shortest)
+            new_car_path = generate_full_path(new_tour, G)
+            new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
+            new_drive_cost = calc_driving_cost(new_car_path, shortest)
+            new_cost = new_walk_cost + new_drive_cost
+            if new_cost < bestCost:
+                bestStop = bstop
+                bestCost = new_cost
+                bestTour = new_tour
+        
+        if bestCost < minCost:
+            for b in bestStop:
+                remain_bus_stop.remove(int(b))
+            minCost = bestCost
+            tour = bestTour
+            stops = stops + bestStop
+            print(minCost)
+        else:
+            break
+    car_path = generate_full_path(tour, G)
+    drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
+    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
+    print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
+    return car_path, drop_off
+            
+            
+
 
 def christofides(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     pass
-<<<<<<< HEAD
 
 def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
@@ -157,7 +214,10 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
                 minDist = shortest[int(home)][int(t)]
                 minLoc = t
         if int(minLoc) in drop_off_mapping:
-            drop_off_mapping[int(minLoc)] = drop_off_mapping[int(minLoc)].append(int(home))
+            temp = drop_off_mapping[int(minLoc)]
+            temp.append(int(home))
+            drop_off_mapping[int(minLoc)] = temp
+
         else:
             drop_off_mapping[int(minLoc)] = [int(home)]
     return drop_off_mapping
@@ -184,8 +244,6 @@ def calculateGain(tour, i, j, k, shortest):
         return (0, 0)
 
     return (-d0 + minSwap[0], minSwap[1])
-=======
->>>>>>> 54d549ab688f13641c7485fc4597d2f7cdcbb499
 
 """
 performs the 3 edge swap
@@ -265,6 +323,9 @@ def generate_full_path(tour, G):
         final_tour.extend(shortestLocalPath)
     return final_tour
 
+"""
+builds a graph using only verticies in the list TOUR.
+"""
 def build_tour_graph(G, tour, all_pairs_shortest_path):
     shortest = all_pairs_shortest_path
     newGraph = nx.Graph()
@@ -278,6 +339,9 @@ def build_tour_graph(G, tour, all_pairs_shortest_path):
                 newGraph.add_edge(int(tour[i]), int(tour[j]), weight = shortest[int(tour[i])][int(tour[j])])
     return newGraph
 
+"""
+finds TSP tour using ant colony optimization
+"""
 def ant_colony_tour(G, start):
     solver = aco.Solver(rho=0.01, q = 1)
     colony = aco.Colony(alpha = 1, beta = 5)
@@ -286,6 +350,27 @@ def ant_colony_tour(G, start):
     start_index = tour_list.index(int(start))
     tour_list = tour_list[start_index:] + tour_list [:start_index] + [int(start)]
     return tour_list
+
+"""
+finds cost of walking given drop off mapping and all pairs shortest path
+"""
+def calc_walking_cost(dropoff_mapping, all_pair_shortest):
+    walking_cost = 0
+    dropoffs = dropoff_mapping.keys()
+    for drop_location in dropoffs:
+        for house in dropoff_mapping[drop_location]:
+            walking_cost += all_pair_shortest[drop_location][house]
+    return walking_cost
+
+def calc_driving_cost(tour, all_pairs_shortest):
+    driving_cost = 0
+    if len(tour) == 1:
+        return 0
+    else:
+        driving_cost = 0
+        for i in range(1, len(tour)):
+            driving_cost += all_pairs_shortest[tour[i-1]][tour[i]]
+        return (2/3) * driving_cost
 """
 ======================================================================
    No need to change any code below this line
@@ -316,16 +401,17 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
 
 def solve_from_file(input_file, output_directory, params=[]):
     print('Processing', input_file)
-
+    
     input_data = utils.read_file(input_file)
     num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
     car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
 
     basename, filename = os.path.split(input_file)
+    output_filename = utils.input_to_output(filename, "")
+    output_file = f'{output_directory}/{output_filename}'
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    output_file = utils.input_to_output(input_file, output_directory)
-
+    
     convertToFile(car_path, drop_offs, output_file, list_locations)
 
 
@@ -346,6 +432,10 @@ def solve_all(input_directory, output_directory, params=[]):
         print("Using ant colony optimization")
         print("Clearing logs")
         utils.clear_file("logs/ant_colony.log")
+    elif params[0] == 'greedy_clustering_three_opt':
+        print("Using greedy clustering three opt")
+        print("Clearing logs")
+        utils.clear_file("logs/greedy_clustering_three_opt.log")
     input_files = utils.get_files_with_extension(input_directory, 'in')
 
     for input_file in input_files:
@@ -367,3 +457,6 @@ if __name__=="__main__":
     else:
         input_file = args.input
         solve_from_file(input_file, output_directory, params=args.params)
+
+
+        

@@ -10,8 +10,9 @@
 
 #  py solver.py --all inputs/ outputs/ greedy
 #  py output_validator.py --all inputs/ outputs/ greedy
-  py solver.py --all inputs/ outputs/ three_opt
-  py output_validator.py --all inputs/ outputs/ three_opt
+ # py solver.py --all inputs/ outputs/ three_opt
+ # py output_validator.py --all inputs/ outputs/ three_opt
 
-#py solver.py inputs/50.in outputs/ three_opt
+#py solver.py inputs/50.in outputs/ greedy_clustering_three_opt
+py solver.py inputs/50.in outputs/ three_opt
 #py solver.py inputs/50.in outputs/ ant_colony
