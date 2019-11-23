@@ -97,10 +97,8 @@ def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacenc
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
     print(len(list_of_locations),'locations', 'ant_colony:', cost)
-    #print(car_path)
-
     return car_path, drop_off
-    #print(solution.nodes)
+    
 
 """
 finds a tour greedily
