@@ -28,7 +28,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         adjacency_matrix: The adjacency matrix from the input file
     Output:
         A list of locations representing the car path
-        A list of (location, [homes]) representing drop-offs
+        A dictionary mapping drop-off location to a list of homes of TAs that got off at that particular location
+        NOTE: both outputs should be in terms of indices not the names of the locations themselves
     """
     if params[0] == 'naive':
         return naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix)
@@ -84,6 +85,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
 
 def christofides(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     pass
+<<<<<<< HEAD
 
 def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
@@ -182,6 +184,8 @@ def calculateGain(tour, i, j, k, shortest):
         return (0, 0)
 
     return (-d0 + minSwap[0], minSwap[1])
+=======
+>>>>>>> 54d549ab688f13641c7485fc4597d2f7cdcbb499
 
 """
 performs the 3 edge swap
@@ -312,17 +316,16 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
 
 def solve_from_file(input_file, output_directory, params=[]):
     print('Processing', input_file)
-    
+
     input_data = utils.read_file(input_file)
     num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
     car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
 
     basename, filename = os.path.split(input_file)
-    output_filename = utils.input_to_output(filename)
-    output_file = f'{output_directory}/{output_filename}'
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    
+    output_file = utils.input_to_output(input_file, output_directory)
+
     convertToFile(car_path, drop_offs, output_file, list_locations)
 
 
@@ -364,6 +367,3 @@ if __name__=="__main__":
     else:
         input_file = args.input
         solve_from_file(input_file, output_directory, params=args.params)
-
-
-        
