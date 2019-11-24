@@ -56,4 +56,7 @@ def clear_logs():
     print('Clearing Log Files')
     clear_file('logs/naive.log')
     clear_file('logs/greedy.log')
+    clear_file('logs/greedy_clustering_three_opt.log')
+    clear_file('logs/three_opt.log')
+    clear_file('logs/ant_colony.log')
 
