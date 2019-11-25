@@ -383,9 +383,9 @@ cdef list fast_nearest_neighbor_tour(locations, starting_car_locations, shortest
     set_of_locations.remove(starting_car_locations)
     cdef int remaining_locations = len(set_of_locations)
     while remaining_locations > 0:
-        cdef int current_node = tour[-1]
-        cdef float closestLen = float('inf')
-        cdef int closestNode = None
+        current_node = tour[-1]
+        closestLen = float('inf')
+        closestNode = None
         for n in set_of_locations:
             if shortest[int(current_node)][int(n)] < closestLen:
                 closestLen = shortest[int(current_node)][int(n)]
