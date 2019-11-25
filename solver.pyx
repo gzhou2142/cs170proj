@@ -154,7 +154,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             result.extend(ls)
         return result
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    cdef int starting_car_location = int(starting_car_location)
+    starting_car_location = int(starting_car_location)
     cdef list shortest = dict(nx.floyd_warshall(G))
     cdef list tour = [int(starting_car_location)]
     cdef list stops = [int(starting_car_location)]
