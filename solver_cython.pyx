@@ -203,24 +203,18 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
 """
 Greedy clustering using two opt local seearch.
 """
-def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
-    def findsubsets(s,n):
-        result = []
-        for i in range(n):
-            ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
-            result.extend(ls)
-        return result
+cdef (list, dict) greedy_clustering_two_opt(list list_of_locations, list list_of_homes, int starting_car_location, adjacency_matrix, int bus_stop_look_ahead):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    starting_car_location = int(starting_car_location)
-    shortest = dict(nx.floyd_warshall(G))
-    tour = [int(starting_car_location)]
-    stops = [int(starting_car_location)]
-    remain_bus_stop = set([int(l) for l in list_of_locations])
+    cdef int starting_car_location = int(starting_car_location)
+    cdef dict shortest = dict(nx.floyd_warshall(G))
+    cdef list tour = [int(starting_car_location)]
+    cdef list = [int(starting_car_location)]
+    cdef list remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
-    drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
-    min_drive_cost =  calc_driving_cost(tour, shortest)
-    minCost = min_walk_cost + min_drive_cost
+    cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
+    cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    cdef double min_drive_cost =  calc_driving_cost(tour, shortest)
+    cdef double minCost = min_walk_cost + min_drive_cost
     while True:
         bestTour = None
         bestStop = None
