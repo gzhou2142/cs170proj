@@ -141,18 +141,18 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
     print(len(list_of_locations),'locations', 'mst:', cost)
     return car_path, drop_off
     
-
-
-"""
-Greedy clustering method with local search. Uses absolute overall improvement
-"""
-def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
-    cpdef findsubsets(s,n):
+    
+cpdef findsubsets(s,n):
         cdef list result = []
         for i in range(n):
             ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
             result.extend(ls)
         return result
+
+"""
+Greedy clustering method with local search. Uses absolute overall improvement
+"""
+def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     starting_car_location = int(starting_car_location)
     cdef list shortest = dict(nx.floyd_warshall(G))
