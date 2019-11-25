@@ -147,7 +147,7 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
 Greedy clustering method with local search. Uses absolute overall improvement
 """
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
-    def findsubsets(s,n):
+    cpdef findsubsets(s,n):
         cdef list result = []
         for i in range(n):
             ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
