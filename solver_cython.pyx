@@ -38,6 +38,9 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     
     start_time = time.time()
 
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    cdef dict shortest = dict(nx.floyd_warshall(G))
+
     if params[0] == 'naive':
         car_path, drop_off = naive_solver(locations, homes, start, adjacency_matrix)
         print("--- %s seconds ---" % (time.time() - start_time))
@@ -67,7 +70,8 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     elif params[0] == 'greedy_clustering_two_opt':
-        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, adjacency_matrix, int(params[1]))
+
+        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, shortest, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     else:
@@ -203,13 +207,11 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
 """
 Greedy clustering using two opt local seearch.
 """
-cdef (list, dict) greedy_clustering_two_opt(list list_of_locations, list list_of_homes, int starting_car_location, adjacency_matrix, int bus_stop_look_ahead):
-    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    cdef int starting_car_location = int(starting_car_location)
-    cdef dict shortest = dict(nx.floyd_warshall(G))
+def greedy_clustering_two_opt( list_of_locations,  list_of_homes,  starting_car_location,  shortest,  bus_stop_look_ahead):
+
     cdef list tour = [int(starting_car_location)]
     cdef list = [int(starting_car_location)]
-    cdef list remain_bus_stop = set([int(l) for l in list_of_locations])
+    remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
     cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
