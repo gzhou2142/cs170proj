@@ -16,3 +16,4 @@
 py solver.py inputs/100.in outputs/ greedy_clustering_three_opt
 #py solver.py inputs/50.in outputs/ three_opt
 #py solver.py inputs/50.in outputs/ ant_colony
+#py solver.py inputs/50.in outputs/ mst
