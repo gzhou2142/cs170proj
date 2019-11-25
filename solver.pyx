@@ -13,7 +13,6 @@ import student_utils
 import acopy as aco
 import itertools
 import time
-
 """
 ======================================================================
   Complete the following function.
@@ -148,37 +147,37 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
 Greedy clustering method with local search. Uses absolute overall improvement
 """
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
-    def findsubsets(s,n):
-        result = []
+    cdef list findsubsets(s,n):
+        cdef list result = []
         for i in range(n):
             ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
             result.extend(ls)
         return result
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    starting_car_location = int(starting_car_location)
-    shortest = dict(nx.floyd_warshall(G))
-    tour = [int(starting_car_location)]
-    stops = [int(starting_car_location)]
-    remain_bus_stop = set([int(l) for l in list_of_locations])
+    cdef int starting_car_location = int(starting_car_location)
+    cdef list shortest = dict(nx.floyd_warshall(G))
+    cdef list tour = [int(starting_car_location)]
+    cdef list stops = [int(starting_car_location)]
+    cdef list remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
-    drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
-    min_drive_cost =  calc_driving_cost(tour, shortest)
-    minCost = min_walk_cost + min_drive_cost
+    cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
+    cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    cdef double min_drive_cost =  calc_driving_cost(tour, shortest)
+    cdef double minCost = min_walk_cost + min_drive_cost
     while True:
-        bestTour = None
-        bestStop = None
-        bestCost = minCost
-        bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
+        cdef list bestTour = tour
+        cdef list bestStop = None
+        cdef double bestCost = minCost
+        cdef list bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
         print("number of stops",len(bstops))
         for bstop in bstops:
-            new_tour = stops + bstop
-            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
-            new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
-            new_tour = three_opt(new_tour, shortest)
-            new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
-            new_drive_cost = calc_driving_cost(new_tour, shortest)
-            new_cost = new_walk_cost + new_drive_cost
+            cdef list new_tour = stops + bstop
+            cdef dict new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
+            cdef list new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
+            cdef list new_tour = three_opt(new_tour, shortest)
+            cdef double new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
+            cdef double new_drive_cost = calc_driving_cost(new_tour, shortest)
+            cdef double new_cost = new_walk_cost + new_drive_cost
             if new_cost < bestCost:
                 bestStop = bstop
                 bestCost = new_cost
@@ -375,18 +374,18 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
 """
 finds a tour using nearest neighbor greedy algorithm. this is the same algorithm as above except it is optimized for the greedy_clustering_three_opt algorithm
 """
-def fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
+cdef list fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
     if len(locations) == 1:
         return [int(starting_car_locations)]
-    set_of_locations = set(locations)
+    cdef set set_of_locations = set(locations)
     set_of_locations.add(starting_car_locations)
-    tour = [int(starting_car_locations)]
+    cdef list tour = [int(starting_car_locations)]
     set_of_locations.remove(starting_car_locations)
-    remaining_locations = len(set_of_locations)
+    cdef int remaining_locations = len(set_of_locations)
     while remaining_locations > 0:
-        current_node = tour[-1]
-        closestLen = float('inf')
-        closestNode = None
+        cdef int current_node = tour[-1]
+        cdef float closestLen = float('inf')
+        cdef int closestNode = None
         for n in set_of_locations:
             if shortest[int(current_node)][int(n)] < closestLen:
                 closestLen = shortest[int(current_node)][int(n)]
@@ -432,21 +431,21 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
 """
 calculates biggest gain given a 3 edge swap
 """
-def calculateGain(tour, i, j, k, shortest):
+cdef (double, int) calculateGain(tour, i, j, k, shortest):
     A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
-    d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
-    d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
-    d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
-    d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
-    d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
-    d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
-    d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
-    d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
+    cdef double d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
+    cdef double d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
+    cdef double d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
+    cdef double d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
+    cdef double d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
+    cdef double d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
+    cdef double d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
+    cdef double d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
 
     
-    swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
+    cdef list swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
     #minSwap = min(swapList, key = lambda x: x[0])
-    minSwap = min(swapList)
+    cdef tuple minSwap = min(swapList)
     if minSwap[1] - d0 == 0:
         return (0, 0)
 
@@ -455,7 +454,7 @@ def calculateGain(tour, i, j, k, shortest):
 """
 performs the 3 edge swap
 """
-def move3(tour, i, j, k, case):
+cdef list move3(tour, i, j, k, case):
     if case == 1:
         tour[j:k] = reversed(tour[j:k])
     elif case == 2:
@@ -475,8 +474,8 @@ def move3(tour, i, j, k, case):
 """
 generates a list that contain all possible 3 edge combinations
 """
-def all_segments(tour):
-    segments = []
+cdef list all_segments(tour):
+    cdef list segments = []
     for i in range(1,len(tour) - 2):
         for j in range(i+2, len(tour) - 1):
             for k in range(j+2, len(tour)):
@@ -507,11 +506,11 @@ def two_opt(tour, shortest):
 """
 best improving three opt
 """
-def three_opt(tour, shortest):
+cdef list three_opt(tour, shortest):
     while True:
-        bestMove = None
-        bestGain = 0
-        bestCase = 0
+        cdef (int, int, int) bestMove = (0,0,0)
+        cdef double bestGain = 0
+        cdef int bestCase = 0
         for (i,j,k) in all_segments(tour):
             currentGain, currentCase = calculateGain(tour, i, j, k, shortest)
             if bestGain > currentGain:
