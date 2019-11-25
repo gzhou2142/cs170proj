@@ -167,7 +167,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
     while True:
         bestTour = tour
         bestStop = None
-        cdef double bestCost = minCost
+        bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
         print("number of stops",len(bstops))
         for bstop in bstops:
