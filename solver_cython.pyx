@@ -210,7 +210,7 @@ Greedy clustering using two opt local seearch.
 def greedy_clustering_two_opt( list_of_locations,  list_of_homes,  starting_car_location,  shortest,  bus_stop_look_ahead):
 
     cdef list tour = [int(starting_car_location)]
-    cdef list = [int(starting_car_location)]
+    cdef list stops = [int(starting_car_location)]
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
