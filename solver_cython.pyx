@@ -119,7 +119,7 @@ def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adja
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    print(len(list_of_locations),'locations', 'three_opt:', cost)
+    print(len(list_of_locations),'locations', 'two_opt:', cost)
     return car_path, drop_off
 """
 uses mst to approximate
@@ -595,8 +595,9 @@ finds cost of walking given drop off mapping and all pairs shortest path
 """
 cdef int calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
     cdef int walking_cost = 0
-    cdef list dropoffs = dropoff_mapping.keys()
-    for drop_location in dropoffs:
+    #cdef list dropoffs = dropoff_mapping.keys()
+    #for drop_location in dropoffs:
+    for drop_location in dropoff_mapping.keys():
         for house in dropoff_mapping[drop_location]:
             walking_cost += all_pair_shortest[drop_location][house]
     return walking_cost
