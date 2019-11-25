@@ -432,7 +432,13 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
 calculates biggest gain given a 3 edge swap
 """
 cpdef (double, int) calculateGain(list tour, int i, int j, int k, dict shortest):
-    A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
+    #A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
+    cdef int A = tour[i-1]
+    cdef int B = tour[i]
+    cdef int C = tour[j-1]
+    cdef int D = tour[j]
+    cdef int E = tour[k-1]
+    cdef int F = tour[k]
     cdef double d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
     cdef double d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
     cdef double d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
@@ -486,11 +492,11 @@ cdef list all_segments(list tour):
 Two opt
 """
 cdef list two_opt(tour, shortest):
-    best = tour
-    improved = True
+    cdef list best = tour
+    cdef int improved = 1
     cdef double bestCost = calc_driving_cost(tour, shortest)
     while improved:
-        improved = False
+        improved = 0
         for i in range(1, len(tour) - 2):
             for j in range(i + 1, len(tour)):
                 if j - i == 1: continue
@@ -500,13 +506,16 @@ cdef list two_opt(tour, shortest):
                 if currentCost < bestCost:
                     bestCost = currentCost
                     best = new_tour
-                    improved = True
+                    improved = 0
         tour = best
     return best
 """
 best improving three opt
 """
 cpdef list three_opt(list tour, dict shortest):
+    cdef tuple bestMove = (0,0,0)
+    cdef double bestGain = 0
+    cdef int bestCase = 0
     while True:
         bestMove = (0,0,0)
         bestGain = 0
@@ -584,20 +593,19 @@ def ant_colony_tour(G, start):
 """
 finds cost of walking given drop off mapping and all pairs shortest path
 """
-def calc_walking_cost(dropoff_mapping, all_pair_shortest):
-    walking_cost = 0
-    dropoffs = dropoff_mapping.keys()
+cdef int calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
+    cdef int walking_cost = 0
+    cdef list dropoffs = dropoff_mapping.keys()
     for drop_location in dropoffs:
         for house in dropoff_mapping[drop_location]:
             walking_cost += all_pair_shortest[drop_location][house]
     return walking_cost
 
-def calc_driving_cost(tour, all_pairs_shortest):
-    driving_cost = 0
+cdef int calc_driving_cost(tour, all_pairs_shortest):
+    cdef int driving_cost = 0
     if len(tour) == 1:
         return 0
     else:
-        driving_cost = 0
         for i in range(1, len(tour)):
             driving_cost += all_pairs_shortest[tour[i-1]][tour[i]]
         return (2/3) * driving_cost
