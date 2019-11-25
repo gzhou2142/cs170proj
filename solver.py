@@ -56,7 +56,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     elif params[0] == 'greedy_clustering_three_opt':
-        car_path, drop_off = greedy_clustering_three_opt(locations, homes, start, adjacency_matrix, params[1])
+        car_path, drop_off = greedy_clustering_three_opt(locations, homes, start, adjacency_matrix, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     elif params[0] == 'mst':
@@ -68,7 +68,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     elif params[0] == 'greedy_clustering_two_opt':
-        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, adjacency_matrix, params[1])
+        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, adjacency_matrix, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     else:
