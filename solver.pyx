@@ -431,7 +431,7 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
 """
 calculates biggest gain given a 3 edge swap
 """
-cpdef (double, int) calculateGain(list tour, int i, int j, int k, list shortest):
+cpdef (double, int) calculateGain(list tour, int i, int j, int k, dict shortest):
     A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
     cdef double d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
     cdef double d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
@@ -474,7 +474,7 @@ cdef list move3(list tour, int i, int j, int k, int case):
 """
 generates a list that contain all possible 3 edge combinations
 """
-cdef list all_segments(tour):
+cdef list all_segments(list tour):
     cdef list segments = []
     for i in range(1,len(tour) - 2):
         for j in range(i+2, len(tour) - 1):
@@ -506,7 +506,7 @@ cdef list two_opt(tour, shortest):
 """
 best improving three opt
 """
-cpdef list three_opt(list tour, list shortest):
+cpdef list three_opt(list tour, dict shortest):
     while True:
         bestMove = (0,0,0)
         bestGain = 0
