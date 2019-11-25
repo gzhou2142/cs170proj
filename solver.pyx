@@ -172,12 +172,12 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
         print("number of stops",len(bstops))
         for bstop in bstops:
             new_tour = stops + bstop
-            cdef dict new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
+            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = three_opt(new_tour, shortest)
-            cdef double new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
-            cdef double new_drive_cost = calc_driving_cost(new_tour, shortest)
-            cdef double new_cost = new_walk_cost + new_drive_cost
+            new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
+            new_drive_cost = calc_driving_cost(new_tour, shortest)
+            new_cost = new_walk_cost + new_drive_cost
             if new_cost < bestCost:
                 bestStop = bstop
                 bestCost = new_cost
