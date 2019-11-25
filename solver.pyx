@@ -141,7 +141,7 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
     print(len(list_of_locations),'locations', 'mst:', cost)
     return car_path, drop_off
     
-    
+
 cpdef findsubsets(s,n):
         cdef list result = []
         for i in range(n):
@@ -431,7 +431,7 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
 """
 calculates biggest gain given a 3 edge swap
 """
-cdef (double, int) calculateGain(tour, i, j, k, shortest):
+cpdef (double, int) calculateGain(list tour, int i, int j, int k, list shortest):
     A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
     cdef double d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
     cdef double d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
@@ -454,7 +454,7 @@ cdef (double, int) calculateGain(tour, i, j, k, shortest):
 """
 performs the 3 edge swap
 """
-cdef list move3(tour, i, j, k, case):
+cdef list move3(list tour, int i, int j, int k, int case):
     if case == 1:
         tour[j:k] = reversed(tour[j:k])
     elif case == 2:
@@ -485,10 +485,10 @@ cdef list all_segments(tour):
 """
 Two opt
 """
-def two_opt(tour, shortest):
+cdef list two_opt(tour, shortest):
     best = tour
     improved = True
-    bestCost = calc_driving_cost(tour, shortest)
+    cdef double bestCost = calc_driving_cost(tour, shortest)
     while improved:
         improved = False
         for i in range(1, len(tour) - 2):
@@ -506,7 +506,7 @@ def two_opt(tour, shortest):
 """
 best improving three opt
 """
-cdef list three_opt(tour, shortest):
+cpdef list three_opt(list tour, list shortest):
     while True:
         bestMove = (0,0,0)
         bestGain = 0
