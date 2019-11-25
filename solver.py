@@ -109,7 +109,7 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/three_opt.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'three_opt:', cost)
+    print(len(list_of_locations),'locations', 'three_opt:', cost, flush = True)
     return car_path, drop_off
 
 def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
@@ -170,7 +170,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
         bestStop = None
         bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
-        print("number of stops",len(bstops))
+        #print("number of stops",len(bstops))
         for bstop in bstops:
             new_tour = stops + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
@@ -190,8 +190,8 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             tour = bestTour
             stops = stops + bestStop
  
-            sys.stdout.write(str(minCost) + '\n')  # same as print
-            sys.stdout.flush()
+            #sys.stdout.write(str(minCost) + '\n')  # same as print
+            #sys.stdout.flush()
         else:
             break
     car_path = generate_full_path(tour, G)
@@ -212,10 +212,9 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
             result.extend(ls)
         return result
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    starting_car_location = int(starting_car_location)
     shortest = dict(nx.floyd_warshall(G))
     tour = [int(starting_car_location)]
-    stops = [int(starting_car_location)]
+    #stops = [int(starting_car_location)]
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
@@ -227,9 +226,9 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
         bestStop = None
         bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
-        print("number of stops",len(bstops))
+        #print("number of stops",len(bstops))
         for bstop in bstops:
-            new_tour = stops + bstop
+            new_tour = tour + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = two_opt(new_tour, shortest)
@@ -242,13 +241,12 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
                 bestTour = new_tour
         if bestCost < minCost:
             for b in bestStop:
-                remain_bus_stop.remove(int(b))
+                remain_bus_stop.remove(b)
             minCost = bestCost
             tour = bestTour
-            stops = stops + bestStop
  
-            sys.stdout.write(str(minCost) + '\n')  # same as print
-            sys.stdout.flush()
+            #sys.stdout.write(str(minCost) + '\n')  # same as print
+            #sys.stdout.flush()
         else:
             break
     tour = three_opt(tour, shortest)
@@ -377,10 +375,10 @@ finds a tour using nearest neighbor greedy algorithm. this is the same algorithm
 """
 def fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
     if len(locations) == 1:
-        return [int(starting_car_locations)]
+        return [starting_car_locations]
     set_of_locations = set(locations)
     set_of_locations.add(starting_car_locations)
-    tour = [int(starting_car_locations)]
+    tour = [starting_car_locations]
     set_of_locations.remove(starting_car_locations)
     remaining_locations = len(set_of_locations)
     while remaining_locations > 0:
@@ -489,21 +487,22 @@ Two opt
 def two_opt(tour, shortest):
     best = tour
     improved = True
-    bestCost = calc_driving_cost(tour, shortest)
     while improved:
         improved = False
+        gain = 0
+        bestSwap = None
         for i in range(1, len(tour) - 2):
             for j in range(i + 1, len(tour)):
-                if j - i == 1: continue
-                new_tour = tour[:]
-                new_tour[i:j] = tour[j-1:i-1:-1]
-                currentCost = calc_driving_cost(new_tour, shortest)
-                if currentCost < bestCost:
-                    bestCost = currentCost
-                    best = new_tour
+                A,B,C,D = tour[i-1], tour[i], tour[j-1], tour[j]
+                currentGain = shortest[A][C] + shortest[B][D] - (shortest[A][B] + shortest[C][D])
+                if currentGain < gain:
+                    gain = currentGain
+                    bestSwap = (i, j)
                     improved = True
-        tour = best
-    return best
+        if bestSwap != None:
+            tour[bestSwap[0]:bestSwap[1]] = tour[bestSwap[1]-1:bestSwap[0]-1:-1]
+    return tour
+
 """
 best improving three opt
 """

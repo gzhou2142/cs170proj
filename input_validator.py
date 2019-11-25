@@ -10,7 +10,15 @@ from student_utils import *
 
 # Change these if you want to allow files with different names and/or graph sizes
 RANGE_OF_INPUT_SIZES = [50, 100, 200]
-VALID_FILENAMES = ['50.in', '100.in', '200.in']
+#VALID_FILENAMES = ['50.in', '100.in', '200.in']
+VALID_FILENAMES = []
+for i in range(1, 367):
+    file_name1 = str(i) + '_' + '50.in'
+    file_name2 = str(i) + '_' + '100.in'
+    file_name3 = str(i) + '_' + '200.in'
+    VALID_FILENAMES.append(file_name1)
+    VALID_FILENAMES.append(file_name2)
+    VALID_FILENAMES.append(file_name3)
 MAX_NAME_LENGTH = 20
 
 def validate_input(input_file, params=[]):
