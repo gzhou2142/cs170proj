@@ -508,9 +508,9 @@ best improving three opt
 """
 cdef list three_opt(tour, shortest):
     while True:
-        cdef (int, int, int) bestMove = (0,0,0)
-        cdef double bestGain = 0
-        cdef int bestCase = 0
+        bestMove = (0,0,0)
+        bestGain = 0
+        bestCase = 0
         for (i,j,k) in all_segments(tour):
             currentGain, currentCase = calculateGain(tour, i, j, k, shortest)
             if bestGain > currentGain:
