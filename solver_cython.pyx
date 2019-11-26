@@ -159,11 +159,10 @@ Greedy clustering method with local search. Uses absolute overall improvement
 """
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    starting_car_location = int(starting_car_location)
-    cdef list shortest = dict(nx.floyd_warshall(G))
+    cdef dict shortest = dict(nx.floyd_warshall(G))
     cdef list tour = [int(starting_car_location)]
-    cdef list stops = [int(starting_car_location)]
-    cdef list remain_bus_stop = set([int(l) for l in list_of_locations])
+    #cdef list stops = [int(starting_car_location)]
+    cdef list remain_bus_stop = set([l for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
     cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
@@ -176,7 +175,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
         print("number of stops",len(bstops))
         for bstop in bstops:
-            new_tour = stops + bstop
+            new_tour = tour + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = three_opt(new_tour, shortest)
@@ -189,10 +188,10 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
                 bestTour = new_tour
         if bestCost < minCost:
             for b in bestStop:
-                remain_bus_stop.remove(int(b))
+                remain_bus_stop.remove(b)
             minCost = bestCost
             tour = bestTour
-            stops = stops + bestStop
+            #stops = stops + bestStop
  
             sys.stdout.write(str(minCost) + '\n')  # same as print
             sys.stdout.flush()

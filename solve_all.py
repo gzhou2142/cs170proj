@@ -5,7 +5,7 @@ file_name_suffix = '50.in'
 output_suffix = '50.out'
 input_folder = 'inputs/'
 output_folder = 'outputs/'
-file_name_prefixes = list(range(20, 50))
+file_name_prefixes = list(range(100, 366))
 
 def solve():
     for fn in file_name_prefixes:

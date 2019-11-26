@@ -226,7 +226,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
         bestStop = None
         bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
-        print("number of stops",len(bstops), flush = True)
+        #print("number of stops",len(bstops), flush = True)
         for bstop in bstops:
             new_tour = tour + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
