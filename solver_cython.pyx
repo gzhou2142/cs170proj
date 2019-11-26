@@ -163,7 +163,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
     cdef list tour = [int(starting_car_location)]
     #cdef list stops = [int(starting_car_location)]
     cdef set remain_bus_stop = set([l for l in list_of_locations])
-    remain_bus_stop.remove(int(starting_car_location))
+    remain_bus_stop.remove(starting_car_location)
     cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
     cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
     cdef double min_drive_cost =  calc_driving_cost(tour, shortest)
@@ -527,8 +527,8 @@ def ant_colony_tour(G, start):
 """
 finds cost of walking given drop off mapping and all pairs shortest path
 """
-cdef int calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
-    cdef int walking_cost = 0
+cdef double calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
+    cdef double walking_cost = 0
     #cdef list dropoffs = dropoff_mapping.keys()
     #for drop_location in dropoffs:
     for drop_location in dropoff_mapping.keys():
@@ -536,8 +536,8 @@ cdef int calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
             walking_cost += all_pair_shortest[drop_location][house]
     return walking_cost
 
-cdef int calc_driving_cost(tour, all_pairs_shortest):
-    cdef int driving_cost = 0
+cdef double calc_driving_cost(tour, all_pairs_shortest):
+    cdef double driving_cost = 0
     if len(tour) == 1:
         return 0
     else:
