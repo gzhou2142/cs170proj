@@ -162,7 +162,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
     cdef dict shortest = dict(nx.floyd_warshall(G))
     cdef list tour = [int(starting_car_location)]
     #cdef list stops = [int(starting_car_location)]
-    cdef list remain_bus_stop = set([l for l in list_of_locations])
+    cdef set remain_bus_stop = set([l for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
     cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
