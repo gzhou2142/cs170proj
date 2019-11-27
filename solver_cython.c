@@ -1755,6 +1755,7 @@ static const char __pyx_k_current_node[] = "current_node";
 static const char __pyx_k_drop_off_map[] = "drop_off_map";
 static const char __pyx_k_logs_mst_log[] = "logs/mst.log";
 static const char __pyx_k_naive_solver[] = "naive_solver";
+static const char __pyx_k_num_dropoffs[] = "num_dropoffs";
 static const char __pyx_k_path_to_file[] = "path_to_file";
 static const char __pyx_k_walking_cost[] = "walking_cost";
 static const char __pyx_k_Clearing_logs[] = "Clearing logs";
@@ -1762,8 +1763,10 @@ static const char __pyx_k_calculateGain[] = "calculateGain";
 static const char __pyx_k_convertToFile[] = "convertToFile";
 static const char __pyx_k_drop_location[] = "drop_location";
 static const char __pyx_k_dropoffNumber[] = "dropoffNumber";
+static const char __pyx_k_dropoff_index[] = "dropoff_index";
 static const char __pyx_k_greedy_solver[] = "greedy_solver";
 static const char __pyx_k_list_of_homes[] = "list_of_homes";
+static const char __pyx_k_new_drop_offs[] = "new_drop_offs";
 static const char __pyx_k_new_walk_cost[] = "new_walk_cost";
 static const char __pyx_k_shortest_path[] = "shortest_path";
 static const char __pyx_k_solver_cython[] = "solver_cython";
@@ -1962,6 +1965,7 @@ static PyObject *__pyx_n_s_drop_off_mapping;
 static PyObject *__pyx_n_s_drop_offs;
 static PyObject *__pyx_n_s_dropoff;
 static PyObject *__pyx_n_s_dropoffNumber;
+static PyObject *__pyx_n_s_dropoff_index;
 static PyObject *__pyx_n_s_dropoff_mapping;
 static PyObject *__pyx_n_s_dropoffs;
 static PyObject *__pyx_n_s_exists;
@@ -2050,11 +2054,13 @@ static PyObject *__pyx_n_s_newGraph;
 static PyObject *__pyx_n_s_new_cost;
 static PyObject *__pyx_n_s_new_drive_cost;
 static PyObject *__pyx_n_s_new_drop_off_map;
+static PyObject *__pyx_n_s_new_drop_offs;
 static PyObject *__pyx_n_s_new_tour;
 static PyObject *__pyx_n_s_new_walk_cost;
 static PyObject *__pyx_n_s_node;
 static PyObject *__pyx_n_s_nodes;
 static PyObject *__pyx_n_s_np;
+static PyObject *__pyx_n_s_num_dropoffs;
 static PyObject *__pyx_n_s_num_houses;
 static PyObject *__pyx_n_s_num_of_locations;
 static PyObject *__pyx_n_s_numpy;
@@ -18891,6 +18897,11 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
   PyObject *__pyx_v_output_file = NULL;
   PyObject *__pyx_v_output_data = NULL;
   PyObject *__pyx_v_car_cycle = NULL;
+  PyObject *__pyx_v_new_drop_offs = NULL;
+  PyObject *__pyx_v_num_dropoffs = NULL;
+  PyObject *__pyx_v_i = NULL;
+  PyObject *__pyx_v_dropoff = NULL;
+  PyObject *__pyx_v_dropoff_index = NULL;
   PyObject *__pyx_v_old_cost = NULL;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -18909,8 +18920,9 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
   PyObject *__pyx_t_13 = NULL;
   PyObject *__pyx_t_14 = NULL;
   PyObject *__pyx_t_15 = NULL;
-  int __pyx_t_16;
+  PyObject *(*__pyx_t_16)(PyObject *);
   int __pyx_t_17;
+  int __pyx_t_18;
   __Pyx_RefNannySetupContext("improve_from_file", 0);
 
   /* "solver_cython.pyx":614
@@ -19689,7 +19701,7 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
  *         convertToFile(car_path, drop_offs, output_file, list_locations)
  *         return             # <<<<<<<<<<<<<<
  *     car_cycle = output_data[0]
- *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
+ *     new_drop_offs = {}
  */
       __Pyx_XDECREF(__pyx_r);
       __pyx_r = Py_None; __Pyx_INCREF(Py_None);
@@ -19725,8 +19737,8 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
  *         convertToFile(car_path, drop_offs, output_file, list_locations)
  *         return
  *     car_cycle = output_data[0]             # <<<<<<<<<<<<<<
- *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
- *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+ *     new_drop_offs = {}
+ *     num_dropoffs = int(output_data[1][0])
  */
   __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_output_data, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 632, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
@@ -19736,296 +19748,494 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
   /* "solver_cython.pyx":633
  *         return
  *     car_cycle = output_data[0]
- *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)             # <<<<<<<<<<<<<<
- *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
- * 
+ *     new_drop_offs = {}             # <<<<<<<<<<<<<<
+ *     num_dropoffs = int(output_data[1][0])
+ *     for i in range(num_dropoffs):
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_student_utils); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 633, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_convert_locations_to_indices); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 633, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_2);
-  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = NULL;
-  __pyx_t_10 = 0;
-  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_2))) {
-    __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_2);
-    if (likely(__pyx_t_6)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
-      __Pyx_INCREF(__pyx_t_6);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_2, function);
-      __pyx_t_10 = 1;
-    }
-  }
-  #if CYTHON_FAST_PYCALL
-  if (PyFunction_Check(__pyx_t_2)) {
-    PyObject *__pyx_temp[3] = {__pyx_t_6, __pyx_v_car_cycle, __pyx_v_list_locations};
-    __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 633, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_GOTREF(__pyx_t_5);
-  } else
-  #endif
-  #if CYTHON_FAST_PYCCALL
-  if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
-    PyObject *__pyx_temp[3] = {__pyx_t_6, __pyx_v_car_cycle, __pyx_v_list_locations};
-    __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 633, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_GOTREF(__pyx_t_5);
-  } else
-  #endif
-  {
-    __pyx_t_7 = PyTuple_New(2+__pyx_t_10); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 633, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    if (__pyx_t_6) {
-      __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_7, 0, __pyx_t_6); __pyx_t_6 = NULL;
-    }
-    __Pyx_INCREF(__pyx_v_car_cycle);
-    __Pyx_GIVEREF(__pyx_v_car_cycle);
-    PyTuple_SET_ITEM(__pyx_t_7, 0+__pyx_t_10, __pyx_v_car_cycle);
-    __Pyx_INCREF(__pyx_v_list_locations);
-    __Pyx_GIVEREF(__pyx_v_list_locations);
-    PyTuple_SET_ITEM(__pyx_t_7, 1+__pyx_t_10, __pyx_v_list_locations);
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_7, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 633, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  }
-  __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __Pyx_DECREF_SET(__pyx_v_car_cycle, __pyx_t_5);
+  __pyx_t_5 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 633, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_v_new_drop_offs = ((PyObject*)__pyx_t_5);
   __pyx_t_5 = 0;
 
   /* "solver_cython.pyx":634
  *     car_cycle = output_data[0]
- *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
- *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)             # <<<<<<<<<<<<<<
- * 
- *     if new_cost < old_cost:
+ *     new_drop_offs = {}
+ *     num_dropoffs = int(output_data[1][0])             # <<<<<<<<<<<<<<
+ *     for i in range(num_dropoffs):
+ *         dropoff = output_data[i + 2]
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_student_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_GetItemInt(__pyx_v_output_data, 1, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_6 = __Pyx_GetItemInt(__pyx_t_5, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_6);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = __Pyx_PyNumber_Int(__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 634, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  __pyx_v_num_dropoffs = __pyx_t_5;
+  __pyx_t_5 = 0;
+
+  /* "solver_cython.pyx":635
+ *     new_drop_offs = {}
+ *     num_dropoffs = int(output_data[1][0])
+ *     for i in range(num_dropoffs):             # <<<<<<<<<<<<<<
+ *         dropoff = output_data[i + 2]
+ *         dropoff_index = list_locations.index(dropoff[0])
+ */
+  __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_range, __pyx_v_num_dropoffs); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 635, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  if (likely(PyList_CheckExact(__pyx_t_5)) || PyTuple_CheckExact(__pyx_t_5)) {
+    __pyx_t_6 = __pyx_t_5; __Pyx_INCREF(__pyx_t_6); __pyx_t_11 = 0;
+    __pyx_t_16 = NULL;
+  } else {
+    __pyx_t_11 = -1; __pyx_t_6 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 635, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_16 = Py_TYPE(__pyx_t_6)->tp_iternext; if (unlikely(!__pyx_t_16)) __PYX_ERR(0, 635, __pyx_L1_error)
+  }
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  for (;;) {
+    if (likely(!__pyx_t_16)) {
+      if (likely(PyList_CheckExact(__pyx_t_6))) {
+        if (__pyx_t_11 >= PyList_GET_SIZE(__pyx_t_6)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_5 = PyList_GET_ITEM(__pyx_t_6, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 635, __pyx_L1_error)
+        #else
+        __pyx_t_5 = PySequence_ITEM(__pyx_t_6, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 635, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        #endif
+      } else {
+        if (__pyx_t_11 >= PyTuple_GET_SIZE(__pyx_t_6)) break;
+        #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
+        __pyx_t_5 = PyTuple_GET_ITEM(__pyx_t_6, __pyx_t_11); __Pyx_INCREF(__pyx_t_5); __pyx_t_11++; if (unlikely(0 < 0)) __PYX_ERR(0, 635, __pyx_L1_error)
+        #else
+        __pyx_t_5 = PySequence_ITEM(__pyx_t_6, __pyx_t_11); __pyx_t_11++; if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 635, __pyx_L1_error)
+        __Pyx_GOTREF(__pyx_t_5);
+        #endif
+      }
+    } else {
+      __pyx_t_5 = __pyx_t_16(__pyx_t_6);
+      if (unlikely(!__pyx_t_5)) {
+        PyObject* exc_type = PyErr_Occurred();
+        if (exc_type) {
+          if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
+          else __PYX_ERR(0, 635, __pyx_L1_error)
+        }
+        break;
+      }
+      __Pyx_GOTREF(__pyx_t_5);
+    }
+    __Pyx_XDECREF_SET(__pyx_v_i, __pyx_t_5);
+    __pyx_t_5 = 0;
+
+    /* "solver_cython.pyx":636
+ *     num_dropoffs = int(output_data[1][0])
+ *     for i in range(num_dropoffs):
+ *         dropoff = output_data[i + 2]             # <<<<<<<<<<<<<<
+ *         dropoff_index = list_locations.index(dropoff[0])
+ *         new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)
+ */
+    __pyx_t_5 = __Pyx_PyInt_AddObjC(__pyx_v_i, __pyx_int_2, 2, 0, 0); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 636, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_v_output_data, __pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 636, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF_SET(__pyx_v_dropoff, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "solver_cython.pyx":637
+ *     for i in range(num_dropoffs):
+ *         dropoff = output_data[i + 2]
+ *         dropoff_index = list_locations.index(dropoff[0])             # <<<<<<<<<<<<<<
+ *         new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)
+ *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
+ */
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_v_list_locations, __pyx_n_s_index); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_7 = __Pyx_GetItemInt(__pyx_v_dropoff, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_4 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_5))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_5);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_5, function);
+      }
+    }
+    __pyx_t_2 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_4, __pyx_t_7) : __Pyx_PyObject_CallOneArg(__pyx_t_5, __pyx_t_7);
+    __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 637, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_XDECREF_SET(__pyx_v_dropoff_index, __pyx_t_2);
+    __pyx_t_2 = 0;
+
+    /* "solver_cython.pyx":638
+ *         dropoff = output_data[i + 2]
+ *         dropoff_index = list_locations.index(dropoff[0])
+ *         new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)             # <<<<<<<<<<<<<<
+ *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
+ *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)
+ */
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_convert_locations_to_indices); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 638, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_7 = __Pyx_PyObject_GetSlice(__pyx_v_dropoff, 1, 0, NULL, NULL, &__pyx_slice__3, 1, 0, 1); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 638, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_4 = NULL;
+    __pyx_t_10 = 0;
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
+      __pyx_t_4 = PyMethod_GET_SELF(__pyx_t_5);
+      if (likely(__pyx_t_4)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
+        __Pyx_INCREF(__pyx_t_4);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_5, function);
+        __pyx_t_10 = 1;
+      }
+    }
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_5)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_t_7, __pyx_v_list_locations};
+      __pyx_t_2 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 638, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_4, __pyx_t_7, __pyx_v_list_locations};
+      __pyx_t_2 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 638, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    } else
+    #endif
+    {
+      __pyx_t_3 = PyTuple_New(2+__pyx_t_10); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 638, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      if (__pyx_t_4) {
+        __Pyx_GIVEREF(__pyx_t_4); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_4); __pyx_t_4 = NULL;
+      }
+      __Pyx_GIVEREF(__pyx_t_7);
+      PyTuple_SET_ITEM(__pyx_t_3, 0+__pyx_t_10, __pyx_t_7);
+      __Pyx_INCREF(__pyx_v_list_locations);
+      __Pyx_GIVEREF(__pyx_v_list_locations);
+      PyTuple_SET_ITEM(__pyx_t_3, 1+__pyx_t_10, __pyx_v_list_locations);
+      __pyx_t_7 = 0;
+      __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_3, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 638, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    if (unlikely(PyDict_SetItem(__pyx_v_new_drop_offs, __pyx_v_dropoff_index, __pyx_t_2) < 0)) __PYX_ERR(0, 638, __pyx_L1_error)
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+
+    /* "solver_cython.pyx":635
+ *     new_drop_offs = {}
+ *     num_dropoffs = int(output_data[1][0])
+ *     for i in range(num_dropoffs):             # <<<<<<<<<<<<<<
+ *         dropoff = output_data[i + 2]
+ *         dropoff_index = list_locations.index(dropoff[0])
+ */
+  }
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+
+  /* "solver_cython.pyx":639
+ *         dropoff_index = list_locations.index(dropoff[0])
+ *         new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)
+ *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)             # <<<<<<<<<<<<<<
+ *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)
+ * 
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_student_utils); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 639, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_cost_of_solution); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 634, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
+  __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_convert_locations_to_indices); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 639, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_2 = NULL;
   __pyx_t_10 = 0;
-  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
-    __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_7);
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_5))) {
+    __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_5);
     if (likely(__pyx_t_2)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_5);
       __Pyx_INCREF(__pyx_t_2);
       __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_7, function);
+      __Pyx_DECREF_SET(__pyx_t_5, function);
       __pyx_t_10 = 1;
     }
   }
   #if CYTHON_FAST_PYCALL
-  if (PyFunction_Check(__pyx_t_7)) {
-    PyObject *__pyx_temp[4] = {__pyx_t_2, __pyx_v_G, __pyx_v_car_cycle, __pyx_v_drop_offs};
-    __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 634, __pyx_L1_error)
+  if (PyFunction_Check(__pyx_t_5)) {
+    PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_v_car_cycle, __pyx_v_list_locations};
+    __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 639, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_GOTREF(__pyx_t_6);
   } else
   #endif
   #if CYTHON_FAST_PYCCALL
-  if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
-    PyObject *__pyx_temp[4] = {__pyx_t_2, __pyx_v_G, __pyx_v_car_cycle, __pyx_v_drop_offs};
-    __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 634, __pyx_L1_error)
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_5)) {
+    PyObject *__pyx_temp[3] = {__pyx_t_2, __pyx_v_car_cycle, __pyx_v_list_locations};
+    __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_5, __pyx_temp+1-__pyx_t_10, 2+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 639, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_GOTREF(__pyx_t_6);
   } else
   #endif
   {
-    __pyx_t_6 = PyTuple_New(3+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 634, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_3 = PyTuple_New(2+__pyx_t_10); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
     if (__pyx_t_2) {
-      __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_2); __pyx_t_2 = NULL;
+      __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_2); __pyx_t_2 = NULL;
+    }
+    __Pyx_INCREF(__pyx_v_car_cycle);
+    __Pyx_GIVEREF(__pyx_v_car_cycle);
+    PyTuple_SET_ITEM(__pyx_t_3, 0+__pyx_t_10, __pyx_v_car_cycle);
+    __Pyx_INCREF(__pyx_v_list_locations);
+    __Pyx_GIVEREF(__pyx_v_list_locations);
+    PyTuple_SET_ITEM(__pyx_t_3, 1+__pyx_t_10, __pyx_v_list_locations);
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_3, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 639, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  }
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __Pyx_DECREF_SET(__pyx_v_car_cycle, __pyx_t_6);
+  __pyx_t_6 = 0;
+
+  /* "solver_cython.pyx":640
+ *         new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)
+ *     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
+ *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)             # <<<<<<<<<<<<<<
+ * 
+ *     if new_cost < old_cost:
+ */
+  __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_student_utils); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_5);
+  __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_cost_of_solution); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+  __pyx_t_5 = NULL;
+  __pyx_t_10 = 0;
+  if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_3);
+    if (likely(__pyx_t_5)) {
+      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+      __Pyx_INCREF(__pyx_t_5);
+      __Pyx_INCREF(function);
+      __Pyx_DECREF_SET(__pyx_t_3, function);
+      __pyx_t_10 = 1;
+    }
+  }
+  #if CYTHON_FAST_PYCALL
+  if (PyFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_G, __pyx_v_car_cycle, __pyx_v_new_drop_offs};
+    __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_GOTREF(__pyx_t_6);
+  } else
+  #endif
+  #if CYTHON_FAST_PYCCALL
+  if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+    PyObject *__pyx_temp[4] = {__pyx_t_5, __pyx_v_G, __pyx_v_car_cycle, __pyx_v_new_drop_offs};
+    __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_10, 3+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_GOTREF(__pyx_t_6);
+  } else
+  #endif
+  {
+    __pyx_t_2 = PyTuple_New(3+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    if (__pyx_t_5) {
+      __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_5); __pyx_t_5 = NULL;
     }
     __Pyx_INCREF(__pyx_v_G);
     __Pyx_GIVEREF(__pyx_v_G);
-    PyTuple_SET_ITEM(__pyx_t_6, 0+__pyx_t_10, __pyx_v_G);
+    PyTuple_SET_ITEM(__pyx_t_2, 0+__pyx_t_10, __pyx_v_G);
     __Pyx_INCREF(__pyx_v_car_cycle);
     __Pyx_GIVEREF(__pyx_v_car_cycle);
-    PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_10, __pyx_v_car_cycle);
-    __Pyx_INCREF(__pyx_v_drop_offs);
-    __Pyx_GIVEREF(__pyx_v_drop_offs);
-    PyTuple_SET_ITEM(__pyx_t_6, 2+__pyx_t_10, __pyx_v_drop_offs);
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_6, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 634, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_10, __pyx_v_car_cycle);
+    __Pyx_INCREF(__pyx_v_new_drop_offs);
+    __Pyx_GIVEREF(__pyx_v_new_drop_offs);
+    PyTuple_SET_ITEM(__pyx_t_2, 2+__pyx_t_10, __pyx_v_new_drop_offs);
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_2, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   }
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  if ((likely(PyTuple_CheckExact(__pyx_t_5))) || (PyList_CheckExact(__pyx_t_5))) {
-    PyObject* sequence = __pyx_t_5;
+  __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+  if ((likely(PyTuple_CheckExact(__pyx_t_6))) || (PyList_CheckExact(__pyx_t_6))) {
+    PyObject* sequence = __pyx_t_6;
     Py_ssize_t size = __Pyx_PySequence_SIZE(sequence);
     if (unlikely(size != 2)) {
       if (size > 2) __Pyx_RaiseTooManyValuesError(2);
       else if (size >= 0) __Pyx_RaiseNeedMoreValuesError(size);
-      __PYX_ERR(0, 634, __pyx_L1_error)
+      __PYX_ERR(0, 640, __pyx_L1_error)
     }
     #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
     if (likely(PyTuple_CheckExact(sequence))) {
-      __pyx_t_7 = PyTuple_GET_ITEM(sequence, 0); 
-      __pyx_t_6 = PyTuple_GET_ITEM(sequence, 1); 
+      __pyx_t_3 = PyTuple_GET_ITEM(sequence, 0); 
+      __pyx_t_2 = PyTuple_GET_ITEM(sequence, 1); 
     } else {
-      __pyx_t_7 = PyList_GET_ITEM(sequence, 0); 
-      __pyx_t_6 = PyList_GET_ITEM(sequence, 1); 
+      __pyx_t_3 = PyList_GET_ITEM(sequence, 0); 
+      __pyx_t_2 = PyList_GET_ITEM(sequence, 1); 
     }
-    __Pyx_INCREF(__pyx_t_7);
-    __Pyx_INCREF(__pyx_t_6);
+    __Pyx_INCREF(__pyx_t_3);
+    __Pyx_INCREF(__pyx_t_2);
     #else
-    __pyx_t_7 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 634, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 634, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
+    __pyx_t_3 = PySequence_ITEM(sequence, 0); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_2 = PySequence_ITEM(sequence, 1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     #endif
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   } else {
     Py_ssize_t index = -1;
-    __pyx_t_2 = PyObject_GetIter(__pyx_t_5); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 634, __pyx_L1_error)
+    __pyx_t_5 = PyObject_GetIter(__pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 640, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_9 = Py_TYPE(__pyx_t_5)->tp_iternext;
+    index = 0; __pyx_t_3 = __pyx_t_9(__pyx_t_5); if (unlikely(!__pyx_t_3)) goto __pyx_L23_unpacking_failed;
+    __Pyx_GOTREF(__pyx_t_3);
+    index = 1; __pyx_t_2 = __pyx_t_9(__pyx_t_5); if (unlikely(!__pyx_t_2)) goto __pyx_L23_unpacking_failed;
     __Pyx_GOTREF(__pyx_t_2);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_9 = Py_TYPE(__pyx_t_2)->tp_iternext;
-    index = 0; __pyx_t_7 = __pyx_t_9(__pyx_t_2); if (unlikely(!__pyx_t_7)) goto __pyx_L21_unpacking_failed;
-    __Pyx_GOTREF(__pyx_t_7);
-    index = 1; __pyx_t_6 = __pyx_t_9(__pyx_t_2); if (unlikely(!__pyx_t_6)) goto __pyx_L21_unpacking_failed;
-    __Pyx_GOTREF(__pyx_t_6);
-    if (__Pyx_IternextUnpackEndCheck(__pyx_t_9(__pyx_t_2), 2) < 0) __PYX_ERR(0, 634, __pyx_L1_error)
+    if (__Pyx_IternextUnpackEndCheck(__pyx_t_9(__pyx_t_5), 2) < 0) __PYX_ERR(0, 640, __pyx_L1_error)
     __pyx_t_9 = NULL;
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    goto __pyx_L22_unpacking_done;
-    __pyx_L21_unpacking_failed:;
-    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    goto __pyx_L24_unpacking_done;
+    __pyx_L23_unpacking_failed:;
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __pyx_t_9 = NULL;
     if (__Pyx_IterFinish() == 0) __Pyx_RaiseNeedMoreValuesError(index);
-    __PYX_ERR(0, 634, __pyx_L1_error)
-    __pyx_L22_unpacking_done:;
+    __PYX_ERR(0, 640, __pyx_L1_error)
+    __pyx_L24_unpacking_done:;
   }
-  __pyx_v_old_cost = __pyx_t_7;
-  __pyx_t_7 = 0;
-  __Pyx_DECREF_SET(__pyx_v__, __pyx_t_6);
-  __pyx_t_6 = 0;
+  __pyx_v_old_cost = __pyx_t_3;
+  __pyx_t_3 = 0;
+  __Pyx_DECREF_SET(__pyx_v__, __pyx_t_2);
+  __pyx_t_2 = 0;
 
-  /* "solver_cython.pyx":636
- *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+  /* "solver_cython.pyx":642
+ *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)
  * 
  *     if new_cost < old_cost:             # <<<<<<<<<<<<<<
  *         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  */
-  __pyx_t_5 = PyObject_RichCompare(__pyx_v_new_cost, __pyx_v_old_cost, Py_LT); __Pyx_XGOTREF(__pyx_t_5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 636, __pyx_L1_error)
-  __pyx_t_16 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_16 < 0)) __PYX_ERR(0, 636, __pyx_L1_error)
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (__pyx_t_16) {
+  __pyx_t_6 = PyObject_RichCompare(__pyx_v_new_cost, __pyx_v_old_cost, Py_LT); __Pyx_XGOTREF(__pyx_t_6); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 642, __pyx_L1_error)
+  __pyx_t_17 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_17 < 0)) __PYX_ERR(0, 642, __pyx_L1_error)
+  __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+  if (__pyx_t_17) {
 
-    /* "solver_cython.pyx":637
+    /* "solver_cython.pyx":643
  * 
  *     if new_cost < old_cost:
  *         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))             # <<<<<<<<<<<<<<
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  *         if not os.path.exists(output_directory):
  */
-    __pyx_t_5 = PyTuple_New(5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 637, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = PyTuple_New(5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_11 = 0;
     __pyx_t_12 = 127;
     __Pyx_INCREF(__pyx_kp_u_Improved_New_cost_is);
     __pyx_t_11 += 22;
     __Pyx_GIVEREF(__pyx_kp_u_Improved_New_cost_is);
-    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_kp_u_Improved_New_cost_is);
-    __pyx_t_6 = __Pyx_PyObject_Format(__pyx_v_new_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 637, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) : __pyx_t_12;
-    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_6);
-    __Pyx_GIVEREF(__pyx_t_6);
-    PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_6);
-    __pyx_t_6 = 0;
+    PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_kp_u_Improved_New_cost_is);
+    __pyx_t_2 = __Pyx_PyObject_Format(__pyx_v_new_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2) : __pyx_t_12;
+    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
+    __Pyx_GIVEREF(__pyx_t_2);
+    PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_2);
+    __pyx_t_2 = 0;
     __Pyx_INCREF(__pyx_kp_u_Old_cost_is);
     __pyx_t_11 += 14;
     __Pyx_GIVEREF(__pyx_kp_u_Old_cost_is);
-    PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_kp_u_Old_cost_is);
-    __pyx_t_6 = __Pyx_PyObject_Format(__pyx_v_old_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 637, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_6) : __pyx_t_12;
-    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_6);
-    __Pyx_GIVEREF(__pyx_t_6);
-    PyTuple_SET_ITEM(__pyx_t_5, 3, __pyx_t_6);
-    __pyx_t_6 = 0;
+    PyTuple_SET_ITEM(__pyx_t_6, 2, __pyx_kp_u_Old_cost_is);
+    __pyx_t_2 = __Pyx_PyObject_Format(__pyx_v_old_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_2) : __pyx_t_12;
+    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_2);
+    __Pyx_GIVEREF(__pyx_t_2);
+    PyTuple_SET_ITEM(__pyx_t_6, 3, __pyx_t_2);
+    __pyx_t_2 = 0;
     __Pyx_INCREF(__pyx_kp_u__11);
     __pyx_t_11 += 1;
     __Pyx_GIVEREF(__pyx_kp_u__11);
-    PyTuple_SET_ITEM(__pyx_t_5, 4, __pyx_kp_u__11);
-    __pyx_t_6 = __Pyx_PyUnicode_Join(__pyx_t_5, 5, __pyx_t_11, __pyx_t_12); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 637, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_6); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 637, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    PyTuple_SET_ITEM(__pyx_t_6, 4, __pyx_kp_u__11);
+    __pyx_t_2 = __Pyx_PyUnicode_Join(__pyx_t_6, 5, __pyx_t_11, __pyx_t_12); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 643, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "solver_cython.pyx":639
+    /* "solver_cython.pyx":645
  *         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  *         if not os.path.exists(output_directory):             # <<<<<<<<<<<<<<
  *             os.makedirs(output_directory)
  *         convertToFile(car_path, drop_offs, output_file, list_locations)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 639, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_path); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 639, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_exists); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 639, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __pyx_t_7 = NULL;
-    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
-      __pyx_t_7 = PyMethod_GET_SELF(__pyx_t_6);
-      if (likely(__pyx_t_7)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_6);
-        __Pyx_INCREF(__pyx_t_7);
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 645, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_path); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 645, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_exists); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 645, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_2);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __pyx_t_3 = NULL;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_2))) {
+      __pyx_t_3 = PyMethod_GET_SELF(__pyx_t_2);
+      if (likely(__pyx_t_3)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_2);
+        __Pyx_INCREF(__pyx_t_3);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_6, function);
+        __Pyx_DECREF_SET(__pyx_t_2, function);
       }
     }
-    __pyx_t_5 = (__pyx_t_7) ? __Pyx_PyObject_Call2Args(__pyx_t_6, __pyx_t_7, __pyx_v_output_directory) : __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_v_output_directory);
-    __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
-    if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 639, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_3, __pyx_v_output_directory) : __Pyx_PyObject_CallOneArg(__pyx_t_2, __pyx_v_output_directory);
+    __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
+    if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 645, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+    __pyx_t_17 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_17 < 0)) __PYX_ERR(0, 645, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_16 = __Pyx_PyObject_IsTrue(__pyx_t_5); if (unlikely(__pyx_t_16 < 0)) __PYX_ERR(0, 639, __pyx_L1_error)
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_17 = ((!__pyx_t_16) != 0);
-    if (__pyx_t_17) {
+    __pyx_t_18 = ((!__pyx_t_17) != 0);
+    if (__pyx_t_18) {
 
-      /* "solver_cython.pyx":640
+      /* "solver_cython.pyx":646
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  *         if not os.path.exists(output_directory):
  *             os.makedirs(output_directory)             # <<<<<<<<<<<<<<
  *         convertToFile(car_path, drop_offs, output_file, list_locations)
  *     else:
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_os); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 640, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_makedirs); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 640, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_7);
-      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = NULL;
-      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
-        __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_7);
-        if (likely(__pyx_t_6)) {
-          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
-          __Pyx_INCREF(__pyx_t_6);
+      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_os); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 646, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_2);
+      __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_makedirs); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 646, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_3);
+      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __pyx_t_2 = NULL;
+      if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+        __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_3);
+        if (likely(__pyx_t_2)) {
+          PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+          __Pyx_INCREF(__pyx_t_2);
           __Pyx_INCREF(function);
-          __Pyx_DECREF_SET(__pyx_t_7, function);
+          __Pyx_DECREF_SET(__pyx_t_3, function);
         }
       }
-      __pyx_t_5 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_7, __pyx_t_6, __pyx_v_output_directory) : __Pyx_PyObject_CallOneArg(__pyx_t_7, __pyx_v_output_directory);
-      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 640, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __pyx_t_6 = (__pyx_t_2) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_2, __pyx_v_output_directory) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_v_output_directory);
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 646, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+      __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "solver_cython.pyx":639
+      /* "solver_cython.pyx":645
  *         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  *         if not os.path.exists(output_directory):             # <<<<<<<<<<<<<<
@@ -20034,79 +20244,79 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
  */
     }
 
-    /* "solver_cython.pyx":641
+    /* "solver_cython.pyx":647
  *         if not os.path.exists(output_directory):
  *             os.makedirs(output_directory)
  *         convertToFile(car_path, drop_offs, output_file, list_locations)             # <<<<<<<<<<<<<<
  *     else:
  *         print("Not improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_convertToFile); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 641, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_6 = NULL;
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_convertToFile); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 647, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_2 = NULL;
     __pyx_t_10 = 0;
-    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_7))) {
-      __pyx_t_6 = PyMethod_GET_SELF(__pyx_t_7);
-      if (likely(__pyx_t_6)) {
-        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_7);
-        __Pyx_INCREF(__pyx_t_6);
+    if (CYTHON_UNPACK_METHODS && unlikely(PyMethod_Check(__pyx_t_3))) {
+      __pyx_t_2 = PyMethod_GET_SELF(__pyx_t_3);
+      if (likely(__pyx_t_2)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_3);
+        __Pyx_INCREF(__pyx_t_2);
         __Pyx_INCREF(function);
-        __Pyx_DECREF_SET(__pyx_t_7, function);
+        __Pyx_DECREF_SET(__pyx_t_3, function);
         __pyx_t_10 = 1;
       }
     }
     #if CYTHON_FAST_PYCALL
-    if (PyFunction_Check(__pyx_t_7)) {
-      PyObject *__pyx_temp[5] = {__pyx_t_6, __pyx_v_car_path, __pyx_v_drop_offs, __pyx_v_output_file, __pyx_v_list_locations};
-      __pyx_t_5 = __Pyx_PyFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_10, 4+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 641, __pyx_L1_error)
-      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __Pyx_GOTREF(__pyx_t_5);
+    if (PyFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[5] = {__pyx_t_2, __pyx_v_car_path, __pyx_v_drop_offs, __pyx_v_output_file, __pyx_v_list_locations};
+      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_10, 4+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 647, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_6);
     } else
     #endif
     #if CYTHON_FAST_PYCCALL
-    if (__Pyx_PyFastCFunction_Check(__pyx_t_7)) {
-      PyObject *__pyx_temp[5] = {__pyx_t_6, __pyx_v_car_path, __pyx_v_drop_offs, __pyx_v_output_file, __pyx_v_list_locations};
-      __pyx_t_5 = __Pyx_PyCFunction_FastCall(__pyx_t_7, __pyx_temp+1-__pyx_t_10, 4+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 641, __pyx_L1_error)
-      __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __Pyx_GOTREF(__pyx_t_5);
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_3)) {
+      PyObject *__pyx_temp[5] = {__pyx_t_2, __pyx_v_car_path, __pyx_v_drop_offs, __pyx_v_output_file, __pyx_v_list_locations};
+      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_3, __pyx_temp+1-__pyx_t_10, 4+__pyx_t_10); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 647, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_2); __pyx_t_2 = 0;
+      __Pyx_GOTREF(__pyx_t_6);
     } else
     #endif
     {
-      __pyx_t_2 = PyTuple_New(4+__pyx_t_10); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 641, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_2);
-      if (__pyx_t_6) {
-        __Pyx_GIVEREF(__pyx_t_6); PyTuple_SET_ITEM(__pyx_t_2, 0, __pyx_t_6); __pyx_t_6 = NULL;
+      __pyx_t_5 = PyTuple_New(4+__pyx_t_10); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 647, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_5);
+      if (__pyx_t_2) {
+        __Pyx_GIVEREF(__pyx_t_2); PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_2); __pyx_t_2 = NULL;
       }
       __Pyx_INCREF(__pyx_v_car_path);
       __Pyx_GIVEREF(__pyx_v_car_path);
-      PyTuple_SET_ITEM(__pyx_t_2, 0+__pyx_t_10, __pyx_v_car_path);
+      PyTuple_SET_ITEM(__pyx_t_5, 0+__pyx_t_10, __pyx_v_car_path);
       __Pyx_INCREF(__pyx_v_drop_offs);
       __Pyx_GIVEREF(__pyx_v_drop_offs);
-      PyTuple_SET_ITEM(__pyx_t_2, 1+__pyx_t_10, __pyx_v_drop_offs);
+      PyTuple_SET_ITEM(__pyx_t_5, 1+__pyx_t_10, __pyx_v_drop_offs);
       __Pyx_INCREF(__pyx_v_output_file);
       __Pyx_GIVEREF(__pyx_v_output_file);
-      PyTuple_SET_ITEM(__pyx_t_2, 2+__pyx_t_10, __pyx_v_output_file);
+      PyTuple_SET_ITEM(__pyx_t_5, 2+__pyx_t_10, __pyx_v_output_file);
       __Pyx_INCREF(__pyx_v_list_locations);
       __Pyx_GIVEREF(__pyx_v_list_locations);
-      PyTuple_SET_ITEM(__pyx_t_2, 3+__pyx_t_10, __pyx_v_list_locations);
-      __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_7, __pyx_t_2, NULL); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 641, __pyx_L1_error)
-      __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
+      PyTuple_SET_ITEM(__pyx_t_5, 3+__pyx_t_10, __pyx_v_list_locations);
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_3, __pyx_t_5, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 647, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_6);
+      __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     }
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "solver_cython.pyx":636
- *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+    /* "solver_cython.pyx":642
+ *     old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)
  * 
  *     if new_cost < old_cost:             # <<<<<<<<<<<<<<
  *         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
  *         #print(input_file, "improved from", old_cost, 'to', new_cost)
  */
-    goto __pyx_L23;
+    goto __pyx_L25;
   }
 
-  /* "solver_cython.pyx":643
+  /* "solver_cython.pyx":649
  *         convertToFile(car_path, drop_offs, output_file, list_locations)
  *     else:
  *         print("Not improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))             # <<<<<<<<<<<<<<
@@ -20114,45 +20324,45 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
  * 
  */
   /*else*/ {
-    __pyx_t_5 = PyTuple_New(5); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 643, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
+    __pyx_t_6 = PyTuple_New(5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_11 = 0;
     __pyx_t_12 = 127;
     __Pyx_INCREF(__pyx_kp_u_Not_improved_New_cost_is);
     __pyx_t_11 += 26;
     __Pyx_GIVEREF(__pyx_kp_u_Not_improved_New_cost_is);
-    PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_kp_u_Not_improved_New_cost_is);
-    __pyx_t_7 = __Pyx_PyObject_Format(__pyx_v_new_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 643, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_12;
-    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
-    __Pyx_GIVEREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_7);
-    __pyx_t_7 = 0;
+    PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_kp_u_Not_improved_New_cost_is);
+    __pyx_t_3 = __Pyx_PyObject_Format(__pyx_v_new_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3) : __pyx_t_12;
+    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_t_3);
+    __pyx_t_3 = 0;
     __Pyx_INCREF(__pyx_kp_u_Old_cost_is);
     __pyx_t_11 += 14;
     __Pyx_GIVEREF(__pyx_kp_u_Old_cost_is);
-    PyTuple_SET_ITEM(__pyx_t_5, 2, __pyx_kp_u_Old_cost_is);
-    __pyx_t_7 = __Pyx_PyObject_Format(__pyx_v_old_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 643, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_7) : __pyx_t_12;
-    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_7);
-    __Pyx_GIVEREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_5, 3, __pyx_t_7);
-    __pyx_t_7 = 0;
+    PyTuple_SET_ITEM(__pyx_t_6, 2, __pyx_kp_u_Old_cost_is);
+    __pyx_t_3 = __Pyx_PyObject_Format(__pyx_v_old_cost, __pyx_n_u_f); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __pyx_t_12 = (__Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3) > __pyx_t_12) ? __Pyx_PyUnicode_MAX_CHAR_VALUE(__pyx_t_3) : __pyx_t_12;
+    __pyx_t_11 += __Pyx_PyUnicode_GET_LENGTH(__pyx_t_3);
+    __Pyx_GIVEREF(__pyx_t_3);
+    PyTuple_SET_ITEM(__pyx_t_6, 3, __pyx_t_3);
+    __pyx_t_3 = 0;
     __Pyx_INCREF(__pyx_kp_u__11);
     __pyx_t_11 += 1;
     __Pyx_GIVEREF(__pyx_kp_u__11);
-    PyTuple_SET_ITEM(__pyx_t_5, 4, __pyx_kp_u__11);
-    __pyx_t_7 = __Pyx_PyUnicode_Join(__pyx_t_5, 5, __pyx_t_11, __pyx_t_12); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 643, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_7);
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_7); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 643, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    PyTuple_SET_ITEM(__pyx_t_6, 4, __pyx_kp_u__11);
+    __pyx_t_3 = __Pyx_PyUnicode_Join(__pyx_t_6, 5, __pyx_t_11, __pyx_t_12); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_3);
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
+    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_t_3); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
+    __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   }
-  __pyx_L23:;
+  __pyx_L25:;
 
   /* "solver_cython.pyx":613
  *     convertToFile(car_path, drop_offs, output_file, list_locations)
@@ -20195,13 +20405,18 @@ static PyObject *__pyx_pf_13solver_cython_51improve_from_file(CYTHON_UNUSED PyOb
   __Pyx_XDECREF(__pyx_v_output_file);
   __Pyx_XDECREF(__pyx_v_output_data);
   __Pyx_XDECREF(__pyx_v_car_cycle);
+  __Pyx_XDECREF(__pyx_v_new_drop_offs);
+  __Pyx_XDECREF(__pyx_v_num_dropoffs);
+  __Pyx_XDECREF(__pyx_v_i);
+  __Pyx_XDECREF(__pyx_v_dropoff);
+  __Pyx_XDECREF(__pyx_v_dropoff_index);
   __Pyx_XDECREF(__pyx_v_old_cost);
   __Pyx_XGIVEREF(__pyx_r);
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "solver_cython.pyx":647
+/* "solver_cython.pyx":653
  * 
  * 
  * def solve_all(input_directory, output_directory, params=[]):             # <<<<<<<<<<<<<<
@@ -20245,7 +20460,7 @@ static PyObject *__pyx_pw_13solver_cython_54solve_all(PyObject *__pyx_self, PyOb
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_output_directory)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("solve_all", 0, 2, 3, 1); __PYX_ERR(0, 647, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("solve_all", 0, 2, 3, 1); __PYX_ERR(0, 653, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
@@ -20255,7 +20470,7 @@ static PyObject *__pyx_pw_13solver_cython_54solve_all(PyObject *__pyx_self, PyOb
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "solve_all") < 0)) __PYX_ERR(0, 647, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "solve_all") < 0)) __PYX_ERR(0, 653, __pyx_L3_error)
       }
     } else {
       switch (PyTuple_GET_SIZE(__pyx_args)) {
@@ -20273,7 +20488,7 @@ static PyObject *__pyx_pw_13solver_cython_54solve_all(PyObject *__pyx_self, PyOb
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("solve_all", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 647, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("solve_all", 0, 2, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 653, __pyx_L3_error)
   __pyx_L3_error:;
   __Pyx_AddTraceback("solver_cython.solve_all", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
@@ -20302,51 +20517,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   PyObject *__pyx_t_9 = NULL;
   __Pyx_RefNannySetupContext("solve_all", 0);
 
-  /* "solver_cython.pyx":648
+  /* "solver_cython.pyx":654
  * 
  * def solve_all(input_directory, output_directory, params=[]):
  *     if params[0] == 'naive':             # <<<<<<<<<<<<<<
  *         print("Using naive method")
  *         print("Clearing logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_naive, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 648, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_naive, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 654, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":649
+    /* "solver_cython.pyx":655
  * def solve_all(input_directory, output_directory, params=[]):
  *     if params[0] == 'naive':
  *         print("Using naive method")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file('logs/naive.log')
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 649, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__13, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 655, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":650
+    /* "solver_cython.pyx":656
  *     if params[0] == 'naive':
  *         print("Using naive method")
  *         print("Clearing logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 650, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 656, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":651
+    /* "solver_cython.pyx":657
  *         print("Using naive method")
  *         print("Clearing logs")
  *         utils.clear_file('logs/naive.log')             # <<<<<<<<<<<<<<
  *     elif params[0] == 'greedy':
  *         print('Using greedy method')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 651, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 657, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 651, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 657, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_3 = NULL;
@@ -20361,12 +20576,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_3, __pyx_kp_u_logs_naive_log) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_u_logs_naive_log);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 651, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 657, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":648
+    /* "solver_cython.pyx":654
  * 
  * def solve_all(input_directory, output_directory, params=[]):
  *     if params[0] == 'naive':             # <<<<<<<<<<<<<<
@@ -20376,51 +20591,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     goto __pyx_L3;
   }
 
-  /* "solver_cython.pyx":652
+  /* "solver_cython.pyx":658
  *         print("Clearing logs")
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':             # <<<<<<<<<<<<<<
  *         print('Using greedy method')
  *         print("Clearning logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 652, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_greedy, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 652, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_greedy, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 658, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":653
+    /* "solver_cython.pyx":659
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':
  *         print('Using greedy method')             # <<<<<<<<<<<<<<
  *         print("Clearning logs")
  *         utils.clear_file('logs/greedy.log')
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__15, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 653, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__15, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":654
+    /* "solver_cython.pyx":660
  *     elif params[0] == 'greedy':
  *         print('Using greedy method')
  *         print("Clearning logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 654, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 660, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":655
+    /* "solver_cython.pyx":661
  *         print('Using greedy method')
  *         print("Clearning logs")
  *         utils.clear_file('logs/greedy.log')             # <<<<<<<<<<<<<<
  *     elif params[0] == 'three_opt':
  *         print('Using three_opt method')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 655, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 661, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 655, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 661, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = NULL;
@@ -20435,12 +20650,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_kp_u_logs_greedy_log) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u_logs_greedy_log);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 655, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 661, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":652
+    /* "solver_cython.pyx":658
  *         print("Clearing logs")
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':             # <<<<<<<<<<<<<<
@@ -20450,51 +20665,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     goto __pyx_L3;
   }
 
-  /* "solver_cython.pyx":656
+  /* "solver_cython.pyx":662
  *         print("Clearning logs")
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':             # <<<<<<<<<<<<<<
  *         print('Using three_opt method')
  *         print("Clearning logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 656, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_three_opt, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 656, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_three_opt, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 662, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":657
+    /* "solver_cython.pyx":663
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':
  *         print('Using three_opt method')             # <<<<<<<<<<<<<<
  *         print("Clearning logs")
  *         utils.clear_file('logs/three_opt.log')
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__17, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 657, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__17, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 663, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":658
+    /* "solver_cython.pyx":664
  *     elif params[0] == 'three_opt':
  *         print('Using three_opt method')
  *         print("Clearning logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file('logs/three_opt.log')
  *     elif params[0] == 'ant_colony':
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 658, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__16, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":659
+    /* "solver_cython.pyx":665
  *         print('Using three_opt method')
  *         print("Clearning logs")
  *         utils.clear_file('logs/three_opt.log')             # <<<<<<<<<<<<<<
  *     elif params[0] == 'ant_colony':
  *         print("Using ant colony optimization")
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 659, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 665, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 659, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 665, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_3 = NULL;
@@ -20509,12 +20724,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_3, __pyx_kp_u_logs_three_opt_log) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_u_logs_three_opt_log);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 659, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 665, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":656
+    /* "solver_cython.pyx":662
  *         print("Clearning logs")
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':             # <<<<<<<<<<<<<<
@@ -20524,51 +20739,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     goto __pyx_L3;
   }
 
-  /* "solver_cython.pyx":660
+  /* "solver_cython.pyx":666
  *         print("Clearning logs")
  *         utils.clear_file('logs/three_opt.log')
  *     elif params[0] == 'ant_colony':             # <<<<<<<<<<<<<<
  *         print("Using ant colony optimization")
  *         print("Clearing logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 660, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 666, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_ant_colony, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 660, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_ant_colony, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 666, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":661
+    /* "solver_cython.pyx":667
  *         utils.clear_file('logs/three_opt.log')
  *     elif params[0] == 'ant_colony':
  *         print("Using ant colony optimization")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/ant_colony.log")
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__18, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 661, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__18, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 667, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":662
+    /* "solver_cython.pyx":668
  *     elif params[0] == 'ant_colony':
  *         print("Using ant colony optimization")
  *         print("Clearing logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file("logs/ant_colony.log")
  *     elif params[0] == 'greedy_clustering_three_opt':
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 662, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 668, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":663
+    /* "solver_cython.pyx":669
  *         print("Using ant colony optimization")
  *         print("Clearing logs")
  *         utils.clear_file("logs/ant_colony.log")             # <<<<<<<<<<<<<<
  *     elif params[0] == 'greedy_clustering_three_opt':
  *         print("Using greedy clustering three opt")
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 663, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 669, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 663, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 669, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = NULL;
@@ -20583,12 +20798,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_kp_u_logs_ant_colony_log) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u_logs_ant_colony_log);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 663, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 669, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":660
+    /* "solver_cython.pyx":666
  *         print("Clearning logs")
  *         utils.clear_file('logs/three_opt.log')
  *     elif params[0] == 'ant_colony':             # <<<<<<<<<<<<<<
@@ -20598,51 +20813,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     goto __pyx_L3;
   }
 
-  /* "solver_cython.pyx":664
+  /* "solver_cython.pyx":670
  *         print("Clearing logs")
  *         utils.clear_file("logs/ant_colony.log")
  *     elif params[0] == 'greedy_clustering_three_opt':             # <<<<<<<<<<<<<<
  *         print("Using greedy clustering three opt")
  *         print("Clearing logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 670, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_greedy_clustering_three_opt, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 664, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_greedy_clustering_three_opt, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 670, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":665
+    /* "solver_cython.pyx":671
  *         utils.clear_file("logs/ant_colony.log")
  *     elif params[0] == 'greedy_clustering_three_opt':
  *         print("Using greedy clustering three opt")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__19, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 665, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__19, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 671, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":666
+    /* "solver_cython.pyx":672
  *     elif params[0] == 'greedy_clustering_three_opt':
  *         print("Using greedy clustering three opt")
  *         print("Clearing logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  *     elif params[0] == 'mst':
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 666, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 672, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":667
+    /* "solver_cython.pyx":673
  *         print("Using greedy clustering three opt")
  *         print("Clearing logs")
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")             # <<<<<<<<<<<<<<
  *     elif params[0] == 'mst':
  *         print("Using mst method")
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 667, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 673, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 667, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 673, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __pyx_t_3 = NULL;
@@ -20657,12 +20872,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_3) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_3, __pyx_kp_u_logs_greedy_clustering_three_opt) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_kp_u_logs_greedy_clustering_three_opt);
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 667, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 673, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":664
+    /* "solver_cython.pyx":670
  *         print("Clearing logs")
  *         utils.clear_file("logs/ant_colony.log")
  *     elif params[0] == 'greedy_clustering_three_opt':             # <<<<<<<<<<<<<<
@@ -20672,51 +20887,51 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     goto __pyx_L3;
   }
 
-  /* "solver_cython.pyx":668
+  /* "solver_cython.pyx":674
  *         print("Clearing logs")
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  *     elif params[0] == 'mst':             # <<<<<<<<<<<<<<
  *         print("Using mst method")
  *         print("Clearing logs")
  */
-  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 668, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_GetItemInt(__pyx_v_params, 0, long, 1, __Pyx_PyInt_From_long, 0, 0, 1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_mst, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 668, __pyx_L1_error)
+  __pyx_t_2 = (__Pyx_PyUnicode_Equals(__pyx_t_1, __pyx_n_u_mst, Py_EQ)); if (unlikely(__pyx_t_2 < 0)) __PYX_ERR(0, 674, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   if (__pyx_t_2) {
 
-    /* "solver_cython.pyx":669
+    /* "solver_cython.pyx":675
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  *     elif params[0] == 'mst':
  *         print("Using mst method")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/mst.log")
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__20, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 669, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__20, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 675, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":670
+    /* "solver_cython.pyx":676
  *     elif params[0] == 'mst':
  *         print("Using mst method")
  *         print("Clearing logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file("logs/mst.log")
  *     input_files = utils.get_files_with_extension(input_directory, 'in')
  */
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 670, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_builtin_print, __pyx_tuple__14, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 676, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":671
+    /* "solver_cython.pyx":677
  *         print("Using mst method")
  *         print("Clearing logs")
  *         utils.clear_file("logs/mst.log")             # <<<<<<<<<<<<<<
  *     input_files = utils.get_files_with_extension(input_directory, 'in')
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 671, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_utils); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 677, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 671, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_clear_file); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 677, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __pyx_t_4 = NULL;
@@ -20731,12 +20946,12 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     }
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_3, __pyx_t_4, __pyx_kp_u_logs_mst_log) : __Pyx_PyObject_CallOneArg(__pyx_t_3, __pyx_kp_u_logs_mst_log);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 671, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 677, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":668
+    /* "solver_cython.pyx":674
  *         print("Clearing logs")
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  *     elif params[0] == 'mst':             # <<<<<<<<<<<<<<
@@ -20746,16 +20961,16 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   }
   __pyx_L3:;
 
-  /* "solver_cython.pyx":672
+  /* "solver_cython.pyx":678
  *         print("Clearing logs")
  *         utils.clear_file("logs/mst.log")
  *     input_files = utils.get_files_with_extension(input_directory, 'in')             # <<<<<<<<<<<<<<
  * 
  *     for input_file in input_files:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 672, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_3, __pyx_n_s_utils); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 678, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_3);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_get_files_with_extension); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 672, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_3, __pyx_n_s_get_files_with_extension); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 678, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
   __pyx_t_3 = NULL;
@@ -20773,7 +20988,7 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   #if CYTHON_FAST_PYCALL
   if (PyFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, __pyx_v_input_directory, __pyx_n_u_in};
-    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_5, 2+__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 672, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_5, 2+__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
@@ -20781,13 +20996,13 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   #if CYTHON_FAST_PYCCALL
   if (__Pyx_PyFastCFunction_Check(__pyx_t_4)) {
     PyObject *__pyx_temp[3] = {__pyx_t_3, __pyx_v_input_directory, __pyx_n_u_in};
-    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_5, 2+__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 672, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyCFunction_FastCall(__pyx_t_4, __pyx_temp+1-__pyx_t_5, 2+__pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_XDECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_GOTREF(__pyx_t_1);
   } else
   #endif
   {
-    __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 672, __pyx_L1_error)
+    __pyx_t_6 = PyTuple_New(2+__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     if (__pyx_t_3) {
       __Pyx_GIVEREF(__pyx_t_3); PyTuple_SET_ITEM(__pyx_t_6, 0, __pyx_t_3); __pyx_t_3 = NULL;
@@ -20798,7 +21013,7 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     __Pyx_INCREF(__pyx_n_u_in);
     __Pyx_GIVEREF(__pyx_n_u_in);
     PyTuple_SET_ITEM(__pyx_t_6, 1+__pyx_t_5, __pyx_n_u_in);
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 672, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 678, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   }
@@ -20806,7 +21021,7 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   __pyx_v_input_files = __pyx_t_1;
   __pyx_t_1 = 0;
 
-  /* "solver_cython.pyx":674
+  /* "solver_cython.pyx":680
  *     input_files = utils.get_files_with_extension(input_directory, 'in')
  * 
  *     for input_file in input_files:             # <<<<<<<<<<<<<<
@@ -20817,26 +21032,26 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     __pyx_t_1 = __pyx_v_input_files; __Pyx_INCREF(__pyx_t_1); __pyx_t_7 = 0;
     __pyx_t_8 = NULL;
   } else {
-    __pyx_t_7 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_input_files); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 674, __pyx_L1_error)
+    __pyx_t_7 = -1; __pyx_t_1 = PyObject_GetIter(__pyx_v_input_files); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 680, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_8 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 674, __pyx_L1_error)
+    __pyx_t_8 = Py_TYPE(__pyx_t_1)->tp_iternext; if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 680, __pyx_L1_error)
   }
   for (;;) {
     if (likely(!__pyx_t_8)) {
       if (likely(PyList_CheckExact(__pyx_t_1))) {
         if (__pyx_t_7 >= PyList_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely(0 < 0)) __PYX_ERR(0, 674, __pyx_L1_error)
+        __pyx_t_4 = PyList_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely(0 < 0)) __PYX_ERR(0, 680, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 674, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 680, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       } else {
         if (__pyx_t_7 >= PyTuple_GET_SIZE(__pyx_t_1)) break;
         #if CYTHON_ASSUME_SAFE_MACROS && !CYTHON_AVOID_BORROWED_REFS
-        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely(0 < 0)) __PYX_ERR(0, 674, __pyx_L1_error)
+        __pyx_t_4 = PyTuple_GET_ITEM(__pyx_t_1, __pyx_t_7); __Pyx_INCREF(__pyx_t_4); __pyx_t_7++; if (unlikely(0 < 0)) __PYX_ERR(0, 680, __pyx_L1_error)
         #else
-        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 674, __pyx_L1_error)
+        __pyx_t_4 = PySequence_ITEM(__pyx_t_1, __pyx_t_7); __pyx_t_7++; if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 680, __pyx_L1_error)
         __Pyx_GOTREF(__pyx_t_4);
         #endif
       }
@@ -20846,7 +21061,7 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
         PyObject* exc_type = PyErr_Occurred();
         if (exc_type) {
           if (likely(__Pyx_PyErr_GivenExceptionMatches(exc_type, PyExc_StopIteration))) PyErr_Clear();
-          else __PYX_ERR(0, 674, __pyx_L1_error)
+          else __PYX_ERR(0, 680, __pyx_L1_error)
         }
         break;
       }
@@ -20855,16 +21070,16 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     __Pyx_XDECREF_SET(__pyx_v_input_file, __pyx_t_4);
     __pyx_t_4 = 0;
 
-    /* "solver_cython.pyx":675
+    /* "solver_cython.pyx":681
  * 
  *     for input_file in input_files:
  *         solve_from_file(input_file, output_directory, params=params)             # <<<<<<<<<<<<<<
  *     print()
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_solve_from_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 675, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_solve_from_file); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 675, __pyx_L1_error)
+    __pyx_t_6 = PyTuple_New(2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_INCREF(__pyx_v_input_file);
     __Pyx_GIVEREF(__pyx_v_input_file);
@@ -20872,17 +21087,17 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
     __Pyx_INCREF(__pyx_v_output_directory);
     __Pyx_GIVEREF(__pyx_v_output_directory);
     PyTuple_SET_ITEM(__pyx_t_6, 1, __pyx_v_output_directory);
-    __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 675, __pyx_L1_error)
+    __pyx_t_3 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_3);
-    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_params, __pyx_v_params) < 0) __PYX_ERR(0, 675, __pyx_L1_error)
-    __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 675, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_3, __pyx_n_s_params, __pyx_v_params) < 0) __PYX_ERR(0, 681, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_6, __pyx_t_3); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 681, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
 
-    /* "solver_cython.pyx":674
+    /* "solver_cython.pyx":680
  *     input_files = utils.get_files_with_extension(input_directory, 'in')
  * 
  *     for input_file in input_files:             # <<<<<<<<<<<<<<
@@ -20892,18 +21107,18 @@ static PyObject *__pyx_pf_13solver_cython_53solve_all(CYTHON_UNUSED PyObject *__
   }
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "solver_cython.pyx":676
+  /* "solver_cython.pyx":682
  *     for input_file in input_files:
  *         solve_from_file(input_file, output_directory, params=params)
  *     print()             # <<<<<<<<<<<<<<
  * 
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_builtin_print); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 676, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_CallNoArg(__pyx_builtin_print); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 682, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "solver_cython.pyx":647
+  /* "solver_cython.pyx":653
  * 
  * 
  * def solve_all(input_directory, output_directory, params=[]):             # <<<<<<<<<<<<<<
@@ -21374,6 +21589,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_drop_offs, __pyx_k_drop_offs, sizeof(__pyx_k_drop_offs), 0, 0, 1, 1},
   {&__pyx_n_s_dropoff, __pyx_k_dropoff, sizeof(__pyx_k_dropoff), 0, 0, 1, 1},
   {&__pyx_n_s_dropoffNumber, __pyx_k_dropoffNumber, sizeof(__pyx_k_dropoffNumber), 0, 0, 1, 1},
+  {&__pyx_n_s_dropoff_index, __pyx_k_dropoff_index, sizeof(__pyx_k_dropoff_index), 0, 0, 1, 1},
   {&__pyx_n_s_dropoff_mapping, __pyx_k_dropoff_mapping, sizeof(__pyx_k_dropoff_mapping), 0, 0, 1, 1},
   {&__pyx_n_s_dropoffs, __pyx_k_dropoffs, sizeof(__pyx_k_dropoffs), 0, 0, 1, 1},
   {&__pyx_n_s_exists, __pyx_k_exists, sizeof(__pyx_k_exists), 0, 0, 1, 1},
@@ -21462,11 +21678,13 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_new_cost, __pyx_k_new_cost, sizeof(__pyx_k_new_cost), 0, 0, 1, 1},
   {&__pyx_n_s_new_drive_cost, __pyx_k_new_drive_cost, sizeof(__pyx_k_new_drive_cost), 0, 0, 1, 1},
   {&__pyx_n_s_new_drop_off_map, __pyx_k_new_drop_off_map, sizeof(__pyx_k_new_drop_off_map), 0, 0, 1, 1},
+  {&__pyx_n_s_new_drop_offs, __pyx_k_new_drop_offs, sizeof(__pyx_k_new_drop_offs), 0, 0, 1, 1},
   {&__pyx_n_s_new_tour, __pyx_k_new_tour, sizeof(__pyx_k_new_tour), 0, 0, 1, 1},
   {&__pyx_n_s_new_walk_cost, __pyx_k_new_walk_cost, sizeof(__pyx_k_new_walk_cost), 0, 0, 1, 1},
   {&__pyx_n_s_node, __pyx_k_node, sizeof(__pyx_k_node), 0, 0, 1, 1},
   {&__pyx_n_s_nodes, __pyx_k_nodes, sizeof(__pyx_k_nodes), 0, 0, 1, 1},
   {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
+  {&__pyx_n_s_num_dropoffs, __pyx_k_num_dropoffs, sizeof(__pyx_k_num_dropoffs), 0, 0, 1, 1},
   {&__pyx_n_s_num_houses, __pyx_k_num_houses, sizeof(__pyx_k_num_houses), 0, 0, 1, 1},
   {&__pyx_n_s_num_of_locations, __pyx_k_num_of_locations, sizeof(__pyx_k_num_of_locations), 0, 0, 1, 1},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
@@ -21587,91 +21805,91 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__4);
   __Pyx_GIVEREF(__pyx_tuple__4);
 
-  /* "solver_cython.pyx":649
+  /* "solver_cython.pyx":655
  * def solve_all(input_directory, output_directory, params=[]):
  *     if params[0] == 'naive':
  *         print("Using naive method")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file('logs/naive.log')
  */
-  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_u_Using_naive_method); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 649, __pyx_L1_error)
+  __pyx_tuple__13 = PyTuple_Pack(1, __pyx_kp_u_Using_naive_method); if (unlikely(!__pyx_tuple__13)) __PYX_ERR(0, 655, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__13);
   __Pyx_GIVEREF(__pyx_tuple__13);
 
-  /* "solver_cython.pyx":650
+  /* "solver_cython.pyx":656
  *     if params[0] == 'naive':
  *         print("Using naive method")
  *         print("Clearing logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':
  */
-  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_kp_u_Clearing_logs); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 650, __pyx_L1_error)
+  __pyx_tuple__14 = PyTuple_Pack(1, __pyx_kp_u_Clearing_logs); if (unlikely(!__pyx_tuple__14)) __PYX_ERR(0, 656, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__14);
   __Pyx_GIVEREF(__pyx_tuple__14);
 
-  /* "solver_cython.pyx":653
+  /* "solver_cython.pyx":659
  *         utils.clear_file('logs/naive.log')
  *     elif params[0] == 'greedy':
  *         print('Using greedy method')             # <<<<<<<<<<<<<<
  *         print("Clearning logs")
  *         utils.clear_file('logs/greedy.log')
  */
-  __pyx_tuple__15 = PyTuple_Pack(1, __pyx_kp_u_Using_greedy_method); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 653, __pyx_L1_error)
+  __pyx_tuple__15 = PyTuple_Pack(1, __pyx_kp_u_Using_greedy_method); if (unlikely(!__pyx_tuple__15)) __PYX_ERR(0, 659, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__15);
   __Pyx_GIVEREF(__pyx_tuple__15);
 
-  /* "solver_cython.pyx":654
+  /* "solver_cython.pyx":660
  *     elif params[0] == 'greedy':
  *         print('Using greedy method')
  *         print("Clearning logs")             # <<<<<<<<<<<<<<
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':
  */
-  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_u_Clearning_logs); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 654, __pyx_L1_error)
+  __pyx_tuple__16 = PyTuple_Pack(1, __pyx_kp_u_Clearning_logs); if (unlikely(!__pyx_tuple__16)) __PYX_ERR(0, 660, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__16);
   __Pyx_GIVEREF(__pyx_tuple__16);
 
-  /* "solver_cython.pyx":657
+  /* "solver_cython.pyx":663
  *         utils.clear_file('logs/greedy.log')
  *     elif params[0] == 'three_opt':
  *         print('Using three_opt method')             # <<<<<<<<<<<<<<
  *         print("Clearning logs")
  *         utils.clear_file('logs/three_opt.log')
  */
-  __pyx_tuple__17 = PyTuple_Pack(1, __pyx_kp_u_Using_three_opt_method); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 657, __pyx_L1_error)
+  __pyx_tuple__17 = PyTuple_Pack(1, __pyx_kp_u_Using_three_opt_method); if (unlikely(!__pyx_tuple__17)) __PYX_ERR(0, 663, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__17);
   __Pyx_GIVEREF(__pyx_tuple__17);
 
-  /* "solver_cython.pyx":661
+  /* "solver_cython.pyx":667
  *         utils.clear_file('logs/three_opt.log')
  *     elif params[0] == 'ant_colony':
  *         print("Using ant colony optimization")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/ant_colony.log")
  */
-  __pyx_tuple__18 = PyTuple_Pack(1, __pyx_kp_u_Using_ant_colony_optimization); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 661, __pyx_L1_error)
+  __pyx_tuple__18 = PyTuple_Pack(1, __pyx_kp_u_Using_ant_colony_optimization); if (unlikely(!__pyx_tuple__18)) __PYX_ERR(0, 667, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
 
-  /* "solver_cython.pyx":665
+  /* "solver_cython.pyx":671
  *         utils.clear_file("logs/ant_colony.log")
  *     elif params[0] == 'greedy_clustering_three_opt':
  *         print("Using greedy clustering three opt")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  */
-  __pyx_tuple__19 = PyTuple_Pack(1, __pyx_kp_u_Using_greedy_clustering_three_op); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 665, __pyx_L1_error)
+  __pyx_tuple__19 = PyTuple_Pack(1, __pyx_kp_u_Using_greedy_clustering_three_op); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 671, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
 
-  /* "solver_cython.pyx":669
+  /* "solver_cython.pyx":675
  *         utils.clear_file("logs/greedy_clustering_three_opt.log")
  *     elif params[0] == 'mst':
  *         print("Using mst method")             # <<<<<<<<<<<<<<
  *         print("Clearing logs")
  *         utils.clear_file("logs/mst.log")
  */
-  __pyx_tuple__20 = PyTuple_Pack(1, __pyx_kp_u_Using_mst_method); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 669, __pyx_L1_error)
+  __pyx_tuple__20 = PyTuple_Pack(1, __pyx_kp_u_Using_mst_method); if (unlikely(!__pyx_tuple__20)) __PYX_ERR(0, 675, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__20);
   __Pyx_GIVEREF(__pyx_tuple__20);
 
@@ -21982,64 +22200,64 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     print('Processing %s' % (input_file))
  * 
  */
-  __pyx_tuple__74 = PyTuple_Pack(22, __pyx_n_s_input_file, __pyx_n_s_output_directory, __pyx_n_s_params, __pyx_n_s_input_data, __pyx_n_s_num_of_locations, __pyx_n_s_num_houses, __pyx_n_s_list_locations, __pyx_n_s_list_houses, __pyx_n_s_starting_car_location, __pyx_n_s_adjacency_matrix, __pyx_n_s_car_path, __pyx_n_s_drop_offs, __pyx_n_s_G, __pyx_n_s__26, __pyx_n_s_new_cost, __pyx_n_s_basename, __pyx_n_s_filename, __pyx_n_s_output_filename, __pyx_n_s_output_file, __pyx_n_s_output_data, __pyx_n_s_car_cycle, __pyx_n_s_old_cost); if (unlikely(!__pyx_tuple__74)) __PYX_ERR(0, 613, __pyx_L1_error)
+  __pyx_tuple__74 = PyTuple_Pack(27, __pyx_n_s_input_file, __pyx_n_s_output_directory, __pyx_n_s_params, __pyx_n_s_input_data, __pyx_n_s_num_of_locations, __pyx_n_s_num_houses, __pyx_n_s_list_locations, __pyx_n_s_list_houses, __pyx_n_s_starting_car_location, __pyx_n_s_adjacency_matrix, __pyx_n_s_car_path, __pyx_n_s_drop_offs, __pyx_n_s_G, __pyx_n_s__26, __pyx_n_s_new_cost, __pyx_n_s_basename, __pyx_n_s_filename, __pyx_n_s_output_filename, __pyx_n_s_output_file, __pyx_n_s_output_data, __pyx_n_s_car_cycle, __pyx_n_s_new_drop_offs, __pyx_n_s_num_dropoffs, __pyx_n_s_i, __pyx_n_s_dropoff, __pyx_n_s_dropoff_index, __pyx_n_s_old_cost); if (unlikely(!__pyx_tuple__74)) __PYX_ERR(0, 613, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__74);
   __Pyx_GIVEREF(__pyx_tuple__74);
-  __pyx_codeobj__75 = (PyObject*)__Pyx_PyCode_New(3, 0, 22, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__74, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_solver_cython_pyx, __pyx_n_s_improve_from_file, 613, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__75)) __PYX_ERR(0, 613, __pyx_L1_error)
+  __pyx_codeobj__75 = (PyObject*)__Pyx_PyCode_New(3, 0, 27, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__74, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_solver_cython_pyx, __pyx_n_s_improve_from_file, 613, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__75)) __PYX_ERR(0, 613, __pyx_L1_error)
 
-  /* "solver_cython.pyx":647
+  /* "solver_cython.pyx":653
  * 
  * 
  * def solve_all(input_directory, output_directory, params=[]):             # <<<<<<<<<<<<<<
  *     if params[0] == 'naive':
  *         print("Using naive method")
  */
-  __pyx_tuple__76 = PyTuple_Pack(5, __pyx_n_s_input_directory, __pyx_n_s_output_directory, __pyx_n_s_params, __pyx_n_s_input_files, __pyx_n_s_input_file); if (unlikely(!__pyx_tuple__76)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_tuple__76 = PyTuple_Pack(5, __pyx_n_s_input_directory, __pyx_n_s_output_directory, __pyx_n_s_params, __pyx_n_s_input_files, __pyx_n_s_input_file); if (unlikely(!__pyx_tuple__76)) __PYX_ERR(0, 653, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__76);
   __Pyx_GIVEREF(__pyx_tuple__76);
-  __pyx_codeobj__77 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__76, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_solver_cython_pyx, __pyx_n_s_solve_all, 647, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__77)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_codeobj__77 = (PyObject*)__Pyx_PyCode_New(3, 0, 5, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__76, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_solver_cython_pyx, __pyx_n_s_solve_all, 653, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__77)) __PYX_ERR(0, 653, __pyx_L1_error)
 
-  /* "solver_cython.pyx":681
+  /* "solver_cython.pyx":687
  * if __name__=="__main__":
  *     parser = argparse.ArgumentParser(description='Parsing arguments')
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')             # <<<<<<<<<<<<<<
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  */
-  __pyx_tuple__78 = PyTuple_Pack(1, __pyx_kp_u_all); if (unlikely(!__pyx_tuple__78)) __PYX_ERR(0, 681, __pyx_L1_error)
+  __pyx_tuple__78 = PyTuple_Pack(1, __pyx_kp_u_all); if (unlikely(!__pyx_tuple__78)) __PYX_ERR(0, 687, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__78);
   __Pyx_GIVEREF(__pyx_tuple__78);
 
-  /* "solver_cython.pyx":682
+  /* "solver_cython.pyx":688
  *     parser = argparse.ArgumentParser(description='Parsing arguments')
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')             # <<<<<<<<<<<<<<
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  */
-  __pyx_tuple__79 = PyTuple_Pack(1, __pyx_n_u_input); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(0, 682, __pyx_L1_error)
+  __pyx_tuple__79 = PyTuple_Pack(1, __pyx_n_u_input); if (unlikely(!__pyx_tuple__79)) __PYX_ERR(0, 688, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__79);
   __Pyx_GIVEREF(__pyx_tuple__79);
 
-  /* "solver_cython.pyx":683
+  /* "solver_cython.pyx":689
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')             # <<<<<<<<<<<<<<
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  *     args = parser.parse_args()
  */
-  __pyx_tuple__80 = PyTuple_Pack(1, __pyx_n_u_output_directory); if (unlikely(!__pyx_tuple__80)) __PYX_ERR(0, 683, __pyx_L1_error)
+  __pyx_tuple__80 = PyTuple_Pack(1, __pyx_n_u_output_directory); if (unlikely(!__pyx_tuple__80)) __PYX_ERR(0, 689, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__80);
   __Pyx_GIVEREF(__pyx_tuple__80);
 
-  /* "solver_cython.pyx":684
+  /* "solver_cython.pyx":690
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')             # <<<<<<<<<<<<<<
  *     args = parser.parse_args()
  *     output_directory = args.output_directory
  */
-  __pyx_tuple__82 = PyTuple_Pack(1, __pyx_n_u_params); if (unlikely(!__pyx_tuple__82)) __PYX_ERR(0, 684, __pyx_L1_error)
+  __pyx_tuple__82 = PyTuple_Pack(1, __pyx_n_u_params); if (unlikely(!__pyx_tuple__82)) __PYX_ERR(0, 690, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__82);
   __Pyx_GIVEREF(__pyx_tuple__82);
   __Pyx_RefNannyFinishContext();
@@ -22843,232 +23061,232 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_improve_from_file, __pyx_t_2) < 0) __PYX_ERR(0, 613, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "solver_cython.pyx":647
+  /* "solver_cython.pyx":653
  * 
  * 
  * def solve_all(input_directory, output_directory, params=[]):             # <<<<<<<<<<<<<<
  *     if params[0] == 'naive':
  *         print("Using naive method")
  */
-  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_t_2 = PyList_New(0); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 653, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_k__12 = __pyx_t_2;
   __Pyx_GIVEREF(__pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_13solver_cython_54solve_all, NULL, __pyx_n_s_solver_cython); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 647, __pyx_L1_error)
+  __pyx_t_2 = PyCFunction_NewEx(&__pyx_mdef_13solver_cython_54solve_all, NULL, __pyx_n_s_solver_cython); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 653, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_solve_all, __pyx_t_2) < 0) __PYX_ERR(0, 647, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_solve_all, __pyx_t_2) < 0) __PYX_ERR(0, 653, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-  /* "solver_cython.pyx":679
+  /* "solver_cython.pyx":685
  * 
  * 
  * if __name__=="__main__":             # <<<<<<<<<<<<<<
  *     parser = argparse.ArgumentParser(description='Parsing arguments')
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 679, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_name); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 685, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_t_2, __pyx_n_u_main, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 679, __pyx_L1_error)
+  __pyx_t_4 = (__Pyx_PyUnicode_Equals(__pyx_t_2, __pyx_n_u_main, Py_EQ)); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 685, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_4) {
 
-    /* "solver_cython.pyx":680
+    /* "solver_cython.pyx":686
  * 
  * if __name__=="__main__":
  *     parser = argparse.ArgumentParser(description='Parsing arguments')             # <<<<<<<<<<<<<<
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_argparse); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 680, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_argparse); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 686, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_ArgumentParser); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 680, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_ArgumentParser); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 686, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 680, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 686, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_description, __pyx_kp_u_Parsing_arguments) < 0) __PYX_ERR(0, 680, __pyx_L1_error)
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 680, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_description, __pyx_kp_u_Parsing_arguments) < 0) __PYX_ERR(0, 686, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_empty_tuple, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 686, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    if (PyDict_SetItem(__pyx_d, __pyx_n_s_parser, __pyx_t_5) < 0) __PYX_ERR(0, 680, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_d, __pyx_n_s_parser, __pyx_t_5) < 0) __PYX_ERR(0, 686, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "solver_cython.pyx":681
+    /* "solver_cython.pyx":687
  * if __name__=="__main__":
  *     parser = argparse.ArgumentParser(description='Parsing arguments')
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')             # <<<<<<<<<<<<<<
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_parser); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 681, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_parser); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 687, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 681, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 687, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 681, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 687, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_action, __pyx_n_u_store_true) < 0) __PYX_ERR(0, 681, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_help, __pyx_kp_u_If_specified_the_solver_is_run_o) < 0) __PYX_ERR(0, 681, __pyx_L1_error)
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__78, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 681, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_action, __pyx_n_u_store_true) < 0) __PYX_ERR(0, 687, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_help, __pyx_kp_u_If_specified_the_solver_is_run_o) < 0) __PYX_ERR(0, 687, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__78, __pyx_t_5); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 687, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "solver_cython.pyx":682
+    /* "solver_cython.pyx":688
  *     parser = argparse.ArgumentParser(description='Parsing arguments')
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')             # <<<<<<<<<<<<<<
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_parser); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 682, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_parser); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 688, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 682, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 688, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 682, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 688, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, ((PyObject *)(&PyUnicode_Type))) < 0) __PYX_ERR(0, 682, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_help, __pyx_kp_u_The_path_to_the_input_file_or_di) < 0) __PYX_ERR(0, 682, __pyx_L1_error)
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__79, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 682, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_type, ((PyObject *)(&PyUnicode_Type))) < 0) __PYX_ERR(0, 688, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_help, __pyx_kp_u_The_path_to_the_input_file_or_di) < 0) __PYX_ERR(0, 688, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_tuple__79, __pyx_t_1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 688, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "solver_cython.pyx":683
+    /* "solver_cython.pyx":689
  *     parser.add_argument('--all', action='store_true', help='If specified, the solver is run on all files in the input directory. Else, it is run on just the given input file')
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')             # <<<<<<<<<<<<<<
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  *     args = parser.parse_args()
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_parser); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 683, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_parser); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 689, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 683, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 689, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 683, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyDict_NewPresized(4); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 689, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_type, ((PyObject *)(&PyUnicode_Type))) < 0) __PYX_ERR(0, 683, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_nargs, __pyx_kp_u__81) < 0) __PYX_ERR(0, 683, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_default, __pyx_kp_u__11) < 0) __PYX_ERR(0, 683, __pyx_L1_error)
-    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_help, __pyx_kp_u_The_path_to_the_directory_where) < 0) __PYX_ERR(0, 683, __pyx_L1_error)
-    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__80, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 683, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_type, ((PyObject *)(&PyUnicode_Type))) < 0) __PYX_ERR(0, 689, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_nargs, __pyx_kp_u__81) < 0) __PYX_ERR(0, 689, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_default, __pyx_kp_u__11) < 0) __PYX_ERR(0, 689, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_help, __pyx_kp_u_The_path_to_the_directory_where) < 0) __PYX_ERR(0, 689, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_tuple__80, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 689, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "solver_cython.pyx":684
+    /* "solver_cython.pyx":690
  *     parser.add_argument('input', type=str, help='The path to the input file or directory')
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')             # <<<<<<<<<<<<<<
  *     args = parser.parse_args()
  *     output_directory = args.output_directory
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_parser); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 684, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_parser); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 684, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_add_argument); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 684, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_argparse); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 684, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_argparse); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_REMAINDER); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 684, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_REMAINDER); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_nargs, __pyx_t_6) < 0) __PYX_ERR(0, 684, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_nargs, __pyx_t_6) < 0) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_help, __pyx_kp_u_Extra_arguments_passed_in) < 0) __PYX_ERR(0, 684, __pyx_L1_error)
-    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__82, __pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 684, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_help, __pyx_kp_u_Extra_arguments_passed_in) < 0) __PYX_ERR(0, 690, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple__82, __pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 690, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "solver_cython.pyx":685
+    /* "solver_cython.pyx":691
  *     parser.add_argument('output_directory', type=str, nargs='?', default='.', help='The path to the directory where the output should be written')
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  *     args = parser.parse_args()             # <<<<<<<<<<<<<<
  *     output_directory = args.output_directory
  *     if args.all:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_parser); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 685, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_parser); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 691, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_parse_args); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 685, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_parse_args); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 691, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 685, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_CallNoArg(__pyx_t_5); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 691, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (PyDict_SetItem(__pyx_d, __pyx_n_s_args, __pyx_t_6) < 0) __PYX_ERR(0, 685, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_d, __pyx_n_s_args, __pyx_t_6) < 0) __PYX_ERR(0, 691, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "solver_cython.pyx":686
+    /* "solver_cython.pyx":692
  *     parser.add_argument('params', nargs=argparse.REMAINDER, help='Extra arguments passed in')
  *     args = parser.parse_args()
  *     output_directory = args.output_directory             # <<<<<<<<<<<<<<
  *     if args.all:
  *         input_directory = args.input
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 686, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 692, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 686, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 692, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    if (PyDict_SetItem(__pyx_d, __pyx_n_s_output_directory, __pyx_t_5) < 0) __PYX_ERR(0, 686, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_d, __pyx_n_s_output_directory, __pyx_t_5) < 0) __PYX_ERR(0, 692, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-    /* "solver_cython.pyx":687
+    /* "solver_cython.pyx":693
  *     args = parser.parse_args()
  *     output_directory = args.output_directory
  *     if args.all:             # <<<<<<<<<<<<<<
  *         input_directory = args.input
  *         solve_all(input_directory, output_directory, params=args.params)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_args); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 687, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_args); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 693, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_all_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 687, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_all_2); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 693, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 687, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_IsTrue(__pyx_t_6); if (unlikely(__pyx_t_4 < 0)) __PYX_ERR(0, 693, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     if (__pyx_t_4) {
 
-      /* "solver_cython.pyx":688
+      /* "solver_cython.pyx":694
  *     output_directory = args.output_directory
  *     if args.all:
  *         input_directory = args.input             # <<<<<<<<<<<<<<
  *         solve_all(input_directory, output_directory, params=args.params)
  *     else:
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 688, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 694, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_input); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 688, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_input); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 694, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (PyDict_SetItem(__pyx_d, __pyx_n_s_input_directory, __pyx_t_5) < 0) __PYX_ERR(0, 688, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s_input_directory, __pyx_t_5) < 0) __PYX_ERR(0, 694, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
 
-      /* "solver_cython.pyx":689
+      /* "solver_cython.pyx":695
  *     if args.all:
  *         input_directory = args.input
  *         solve_all(input_directory, output_directory, params=args.params)             # <<<<<<<<<<<<<<
  *     else:
  *         input_file = args.input
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_solve_all); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_solve_all); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_input_directory); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_input_directory); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __pyx_t_1 = PyTuple_New(2); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_GIVEREF(__pyx_t_6);
       PyTuple_SET_ITEM(__pyx_t_1, 0, __pyx_t_6);
@@ -23076,23 +23294,23 @@ if (!__Pyx_RefNanny) {
       PyTuple_SET_ITEM(__pyx_t_1, 1, __pyx_t_2);
       __pyx_t_6 = 0;
       __pyx_t_2 = 0;
-      __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_args); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_params); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_params); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_params, __pyx_t_7) < 0) __PYX_ERR(0, 689, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_params, __pyx_t_7) < 0) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 689, __pyx_L1_error)
+      __pyx_t_7 = __Pyx_PyObject_Call(__pyx_t_5, __pyx_t_1, __pyx_t_2); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 695, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
 
-      /* "solver_cython.pyx":687
+      /* "solver_cython.pyx":693
  *     args = parser.parse_args()
  *     output_directory = args.output_directory
  *     if args.all:             # <<<<<<<<<<<<<<
@@ -23102,7 +23320,7 @@ if (!__Pyx_RefNanny) {
       goto __pyx_L3;
     }
 
-    /* "solver_cython.pyx":691
+    /* "solver_cython.pyx":697
  *         solve_all(input_directory, output_directory, params=args.params)
  *     else:
  *         input_file = args.input             # <<<<<<<<<<<<<<
@@ -23110,28 +23328,28 @@ if (!__Pyx_RefNanny) {
  * 
  */
     /*else*/ {
-      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_args); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 691, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_args); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 697, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_input); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 691, __pyx_L1_error)
+      __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_input); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 697, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (PyDict_SetItem(__pyx_d, __pyx_n_s_input_file, __pyx_t_2) < 0) __PYX_ERR(0, 691, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_d, __pyx_n_s_input_file, __pyx_t_2) < 0) __PYX_ERR(0, 697, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "solver_cython.pyx":692
+      /* "solver_cython.pyx":698
  *     else:
  *         input_file = args.input
  *         solve_from_file(input_file, output_directory, params=args.params)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_solve_from_file); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_solve_from_file); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
-      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_input_file); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_input_file); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_output_directory); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __pyx_t_5 = PyTuple_New(2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __Pyx_GIVEREF(__pyx_t_7);
       PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_7);
@@ -23139,16 +23357,16 @@ if (!__Pyx_RefNanny) {
       PyTuple_SET_ITEM(__pyx_t_5, 1, __pyx_t_1);
       __pyx_t_7 = 0;
       __pyx_t_1 = 0;
-      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
-      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_args); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_7, __pyx_n_s_args); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_7);
-      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_params); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_7, __pyx_n_s_params); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-      if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_params, __pyx_t_6) < 0) __PYX_ERR(0, 692, __pyx_L1_error)
+      if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_params, __pyx_t_6) < 0) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 692, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 698, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -23157,7 +23375,7 @@ if (!__Pyx_RefNanny) {
     }
     __pyx_L3:;
 
-    /* "solver_cython.pyx":679
+    /* "solver_cython.pyx":685
  * 
  * 
  * if __name__=="__main__":             # <<<<<<<<<<<<<<

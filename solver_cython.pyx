@@ -630,8 +630,14 @@ def improve_from_file(input_file, output_directory, params = []):
         convertToFile(car_path, drop_offs, output_file, list_locations)
         return
     car_cycle = output_data[0]
+    new_drop_offs = {}
+    num_dropoffs = int(output_data[1][0])
+    for i in range(num_dropoffs):
+        dropoff = output_data[i + 2]
+        dropoff_index = list_locations.index(dropoff[0])
+        new_drop_offs[dropoff_index] = convert_locations_to_indices(dropoff[1:], list_locations)
     car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
-    old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+    old_cost, _ = student_utils.cost_of_solution(G, car_cycle, new_drop_offs)
 
     if new_cost < old_cost:
         print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))

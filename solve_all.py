@@ -5,19 +5,20 @@ import cython
 import solver_cython
 
 
-file_name_suffix = '100.in'
+file_name_suffix = sys.argv[1]
 output_suffix = '100.out'
 input_folder = 'inputs/'
 output_folder = 'outputs/'
-file_name_prefixes = list(range(int(sys.argv[1]), int(sys.argv[2])))
+file_name_prefixes = list(range(int(sys.argv[2]), int(sys.argv[3])))
 
 def solve():
     for fn in file_name_prefixes:
         file_name = input_folder + str(fn) + '_' + file_name_suffix
         #print("Solving:",file_name, flush = True)
         try:
-            solver_cython.improve_from_file(file_name, output_folder, params=['greedy_clustering_three_opt', 2])
-        except:
+            solver_cython.improve_from_file(file_name, output_folder, params=[sys.argv[4], sys.argv[5]])
+        except Exception as e:
+            print(e)
             print(file_name, "doesn't exist")
 
 def validate():
