@@ -13,7 +13,7 @@ import student_utils
 import acopy as aco
 import itertools
 import time
-import cython
+
 """
 ======================================================================
   Complete the following function.
@@ -39,8 +39,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     
     start_time = time.time()
 
-    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    cdef dict shortest = dict(nx.floyd_warshall(G))
+    
 
     if params[0] == 'naive':
         car_path, drop_off = naive_solver(locations, homes, start, adjacency_matrix)
@@ -71,8 +70,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     elif params[0] == 'greedy_clustering_two_opt':
-
-        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, shortest, int(params[1]))
+        car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, adjacency_matrix, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
     else:
@@ -113,7 +111,7 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/three_opt.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'three_opt:', cost)
+    #print(len(list_of_locations),'locations', 'three_opt:', cost)
     return car_path, drop_off
 
 def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
@@ -124,7 +122,7 @@ def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adja
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    print(len(list_of_locations),'locations', 'two_opt:', cost)
+    #print(len(list_of_locations),'locations', 'two_opt:', cost)
     return car_path, drop_off
 """
 uses mst to approximate
@@ -147,33 +145,36 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
     return car_path, drop_off
     
 
-cpdef list findsubsets(s,n):
-        cdef list result = []
+
+def findsubsets(s,n):
+        result = []
         for i in range(n):
             ls = [list(x) for x in list(itertools.combinations(s, i + 1))]
             result.extend(ls)
         return result
+
 
 """
 Greedy clustering method with local search. Uses absolute overall improvement
 """
 def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    cdef dict shortest = dict(nx.floyd_warshall(G))
-    cdef list tour = [int(starting_car_location)]
-    #cdef list stops = [int(starting_car_location)]
-    cdef set remain_bus_stop = set([l for l in list_of_locations])
-    remain_bus_stop.remove(starting_car_location)
-    cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
-    cdef double min_drive_cost =  calc_driving_cost(tour, shortest)
-    cdef double minCost = min_walk_cost + min_drive_cost
-    while True:
-        bestTour = tour
+    starting_car_location = int(starting_car_location)
+    shortest = dict(nx.floyd_warshall(G))
+    cdef list tour = [starting_car_location]
+    remain_bus_stop = set([int(l) for l in list_of_locations])
+    remain_bus_stop.remove(int(starting_car_location))
+    drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
+    #min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    #min_drive_cost =  calc_driving_cost(tour, shortest)
+    #minCost = min_walk_cost + min_drive_cost
+    cdef double minCost = calc_walking_cost(drop_off_map, shortest) + calc_driving_cost(tour, shortest)
+    cdef loop = 1
+    while loop:
+        bestTour = None
         bestStop = None
         bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
-        print("number of stops",len(bstops))
         for bstop in bstops:
             new_tour = tour + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
@@ -188,73 +189,67 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
                 bestTour = new_tour
         if bestCost < minCost:
             for b in bestStop:
-                remain_bus_stop.remove(b)
+                remain_bus_stop.remove(int(b))
             minCost = bestCost
             tour = bestTour
-            #stops = stops + bestStop
- 
-            sys.stdout.write(str(minCost) + '\n')  # same as print
-            sys.stdout.flush()
+            # sys.stdout.write(str(minCost) + '\n')  # same as print
+            # sys.stdout.flush()
         else:
-            break
+            loop = 0
     car_path = generate_full_path(tour, G)
     drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
+    #utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
+    #print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
     return car_path, drop_off
 
 """
 Greedy clustering using two opt local seearch.
 """
-def greedy_clustering_two_opt( list_of_locations,  list_of_homes,  starting_car_location,  shortest,  bus_stop_look_ahead):
-
-    cdef list tour = [int(starting_car_location)]
-    cdef list stops = [int(starting_car_location)]
+def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    shortest = dict(nx.floyd_warshall(G))
+    tour = [int(starting_car_location)]
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
-    cdef dict drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    cdef double min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
-    cdef double min_drive_cost =  calc_driving_cost(tour, shortest)
-    cdef double minCost = min_walk_cost + min_drive_cost
-    while True:
+    drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
+    #min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    #min_drive_cost =  calc_driving_cost(tour, shortest)
+    #minCost = min_walk_cost + min_drive_cost
+    cdef double minCost = calc_walking_cost(drop_off_map, shortest)
+    cdef int loop = 1
+    while loop:
         bestTour = None
         bestStop = None
         bestCost = minCost
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
-        print("number of stops",len(bstops))
         for bstop in bstops:
-            new_tour = stops + bstop
+            new_tour = tour + bstop
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = two_opt(new_tour, shortest)
-            new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
-            new_drive_cost = calc_driving_cost(new_tour, shortest)
-            new_cost = new_walk_cost + new_drive_cost
+            new_cost = calc_walking_cost(new_drop_off_map, shortest) + calc_driving_cost(new_tour, shortest)
             if new_cost < bestCost:
                 bestStop = bstop
                 bestCost = new_cost
                 bestTour = new_tour
         if bestCost < minCost:
             for b in bestStop:
-                remain_bus_stop.remove(int(b))
+                remain_bus_stop.remove(b)
             minCost = bestCost
             tour = bestTour
-            stops = stops + bestStop
- 
-            # sys.stdout.write(str(minCost) + '\n')  # same as print
-            # sys.stdout.flush()
-            print(minCost)
+            #print(minCost)
+            #sys.stdout.write(str(minCost) + '\n')  # same as print
+            #sys.stdout.flush()
         else:
-            break
+            loop = 0
     tour = three_opt(tour, shortest)
     car_path = generate_full_path(tour, G)
     drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
+    #utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
+    #print(len(list_of_locations),'locations', 'greedy_clustering_two_opt:', cost)
     return car_path, drop_off
-
 
 
 def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
@@ -308,14 +303,15 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
 """
 finds a tour using nearest neighbor greedy algorithm. this is the same algorithm as above except it is optimized for the greedy_clustering_three_opt algorithm
 """
-cdef list fast_nearest_neighbor_tour(list locations, int starting_car_locations, dict shortest):
+def fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
     if len(locations) == 1:
-        return [int(starting_car_locations)]
+        return [starting_car_locations]
     cdef set set_of_locations = set(locations)
     set_of_locations.add(starting_car_locations)
-    cdef list tour = [int(starting_car_locations)]
+    cdef list tour = [starting_car_locations]
     set_of_locations.remove(starting_car_locations)
     cdef int remaining_locations = len(set_of_locations)
+    cdef int current_node = tour[-1]
     while remaining_locations > 0:
         current_node = tour[-1]
         closestLen = float('inf')
@@ -365,7 +361,7 @@ def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
 """
 calculates biggest gain given a 3 edge swap
 """
-cpdef (double, int) calculateGain(list tour, int i, int j, int k, dict shortest):
+def calculateGain( tour, i, j, k, shortest):
     #A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
     cdef int A = tour[i-1]
     cdef int B = tour[i]
@@ -373,28 +369,46 @@ cpdef (double, int) calculateGain(list tour, int i, int j, int k, dict shortest)
     cdef int D = tour[j]
     cdef int E = tour[k-1]
     cdef int F = tour[k]
-    cdef double d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
-    cdef double d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
-    cdef double d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
-    cdef double d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
-    cdef double d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
-    cdef double d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
-    cdef double d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
-    cdef double d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
+    cdef double AB = shortest[A][B]
+    cdef double CD = shortest[C][D]
+    cdef double EF = shortest[E][F]
+    cdef double CE = shortest[C][E]
+    cdef double DF = shortest[D][F]
+    cdef double AC = shortest[A][C]
+    cdef double BD = shortest[B][D]
+    cdef double BE = shortest[B][E]
+    cdef double AD = shortest[A][D]
+    cdef double CF = shortest[C][F]
+    cdef double BF = shortest[B][F]
+    cdef double AE = shortest[A][E]
+
+
+    #cdef double CE, DF, AC, BD, BE = shortest[C][E], shortest[D][F], shortest[A][C], shortest[B][D], shortest[B][E]
+    #cdef double AD, CF, BF, AE = shortest[A][D], shortest[C][F], shortest[B][F], shortest[A][E]
+    cdef double d0 = AB + CD + EF
+    cdef double d1 = AB + CE + DF
+    cdef double d2 = AC + BD + EF
+    cdef double d3 = AC + BE + DF
+    cdef double d4 = AD + BE + CF
+    cdef double d5 = AD + CE + BF
+    cdef double d6 = AE + BD + CF
+    cdef double d7 = AE + CD + BF
 
     
-    cdef list swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
-    #minSwap = min(swapList, key = lambda x: x[0])
-    cdef tuple minSwap = min(swapList)
-    if minSwap[1] - d0 == 0:
+    #swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
+    swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
+    minSwap = min(swapList)
+    gain = minSwap[0] - d0
+    if gain == 0:
         return (0, 0)
 
-    return (-d0 + minSwap[0], minSwap[1])
+    return (gain, minSwap[1])
+
 
 """
 performs the 3 edge swap
 """
-cdef list move3(list tour, int i, int j, int k, int case):
+def move3(tour, i, j, k, case):
     if case == 1:
         tour[j:k] = reversed(tour[j:k])
     elif case == 2:
@@ -414,54 +428,61 @@ cdef list move3(list tour, int i, int j, int k, int case):
 """
 generates a list that contain all possible 3 edge combinations
 """
-cdef list all_segments(list tour):
-    cdef list segments = []
+# def all_segments(tour):
+#     segments = []
+#     for i in range(1,len(tour) - 2):
+#         for j in range(i+2, len(tour) - 1):
+#             for k in range(j+2, len(tour)):
+#                 segments.append((i,j,k))
+#     return segments
+
+def all_segments(tour):
+    #segments = []
     for i in range(1,len(tour) - 2):
         for j in range(i+2, len(tour) - 1):
             for k in range(j+2, len(tour)):
-                segments.append((i,j,k))
-    return segments
-
+                yield (i,j,k)
+    #return segments
 """
 Two opt
 """
-cdef list two_opt(list tour, dict shortest):
+def two_opt( tour,  shortest):
     cdef list best = tour
     cdef int improved = 1
-    cdef double bestCost = calc_driving_cost(tour, shortest)
     while improved:
         improved = 0
+        gain = 0
+        bestSwap = None
         for i in range(1, len(tour) - 2):
             for j in range(i + 1, len(tour)):
-                if j - i == 1: continue
-                #new_tour = tour[:]
-                new_tour[i:j] = tour[j-1:i-1:-1]
-                currentCost = calc_driving_cost(new_tour, shortest)
-                if currentCost < bestCost:
-                    bestCost = currentCost
-                    best = new_tour
-                    improved = 0
-        tour = best
-    return best
+                A,B,C,D = tour[i-1], tour[i], tour[j-1], tour[j]
+                currentGain = shortest[A][C] + shortest[B][D] - (shortest[A][B] + shortest[C][D])
+                if currentGain < gain:
+                    gain = currentGain
+                    bestSwap = (i, j)
+                    improved = 1
+        if bestSwap != None:
+            tour[bestSwap[0]:bestSwap[1]] = tour[bestSwap[1]-1:bestSwap[0]-1:-1]
+    return tour
+
+
+
 """
 best improving three opt
 """
-cpdef list three_opt(list tour, dict shortest):
-    cdef tuple bestMove = (0,0,0)
-    cdef double bestGain = 0
-    cdef int bestCase = 0
-    while True:
-        bestMove = (0,0,0)
+def three_opt(tour, shortest):
+    cdef int loop = 1
+    while loop:
+        bestMove = None
         bestGain = 0
         bestCase = 0
         for (i,j,k) in all_segments(tour):
             currentGain, currentCase = calculateGain(tour, i, j, k, shortest)
             if bestGain > currentGain:
-                bestGain = currentGain
-                bestCase = currentCase
+                bestGain, bestCase = currentGain, currentCase
                 bestMove = (i,j,k)
         if bestGain >= -0.00001:
-            break
+            loop = 0
         else:
             i,j,k = bestMove
             tour = move3(tour, i, j, k, bestCase)
@@ -527,23 +548,25 @@ def ant_colony_tour(G, start):
 """
 finds cost of walking given drop off mapping and all pairs shortest path
 """
-cdef double calc_walking_cost(dict dropoff_mapping, dict all_pair_shortest):
-    cdef double walking_cost = 0
-    #cdef list dropoffs = dropoff_mapping.keys()
-    #for drop_location in dropoffs:
-    for drop_location in dropoff_mapping.keys():
+def calc_walking_cost(dropoff_mapping, all_pair_shortest):
+    walking_cost = 0.0
+    dropoffs = dropoff_mapping.keys()
+    for drop_location in dropoffs:
         for house in dropoff_mapping[drop_location]:
             walking_cost += all_pair_shortest[drop_location][house]
     return walking_cost
 
 cdef double calc_driving_cost(tour, all_pairs_shortest):
-    cdef double driving_cost = 0
+    cdef double driving_cost = 0.0
+    #cdef double ratio = 2
     if len(tour) == 1:
-        return 0
+        return driving_cost
     else:
+        driving_cost = 0
         for i in range(1, len(tour)):
             driving_cost += all_pairs_shortest[tour[i-1]][tour[i]]
-        return (2/3) * driving_cost
+        driving_cost = driving_cost * 2 / 3
+        return driving_cost
 """
 ======================================================================
    No need to change any code below this line
@@ -586,6 +609,39 @@ def solve_from_file(input_file, output_directory, params=[]):
         os.makedirs(output_directory)
     
     convertToFile(car_path, drop_offs, output_file, list_locations)
+
+def improve_from_file(input_file, output_directory, params = []):
+    print('Processing %s' % (input_file))
+    
+    input_data = utils.read_file(input_file)
+    num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
+    car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+
+    new_cost, _ = student_utils.cost_of_solution(G, car_path, drop_offs)
+
+    basename, filename = os.path.split(input_file)
+    output_filename = utils.input_to_output(filename, "")
+    output_file = f'{output_directory}/{output_filename}'
+    try:
+        output_data = utils.read_file(output_file)
+    except:
+        print("%s has cost %f" % (input_file, new_cost))
+        convertToFile(car_path, drop_offs, output_file, list_locations)
+        return
+    car_cycle = output_data[0]
+    car_cycle = student_utils.convert_locations_to_indices(car_cycle, list_locations)
+    old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+
+    if new_cost < old_cost:
+        print("Improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
+        #print(input_file, "improved from", old_cost, 'to', new_cost) 
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+        convertToFile(car_path, drop_offs, output_file, list_locations)
+    else:
+        print("Not improved. New cost is %f. Old cost is %f." % (new_cost, old_cost))
+
 
 
 def solve_all(input_directory, output_directory, params=[]):

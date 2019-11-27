@@ -120,7 +120,7 @@ def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adja
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    print(len(list_of_locations),'locations', 'three_opt:', cost)
+    print(len(list_of_locations),'locations', 'two_opt:', cost)
     return car_path, drop_off
 """
 uses mst to approximate
@@ -254,7 +254,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
     drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
+    print(len(list_of_locations),'locations', 'greedy_clustering_two_opt:', cost)
     return car_path, drop_off
 
 """
@@ -432,14 +432,26 @@ calculates biggest gain given a 3 edge swap
 """
 def calculateGain(tour, i, j, k, shortest):
     A,B,C,D,E,F = tour[i-1], tour[i], tour[j-1], tour[j], tour[k-1], tour[k]
-    d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
-    d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
-    d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
-    d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
-    d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
-    d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
-    d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
-    d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
+    AB, CD, EF = shortest[A][B], shortest[C][D], shortest[E][F]
+    CE, DF, AC, BD, BE = shortest[C][E], shortest[D][F], shortest[A][C], shortest[B][D], shortest[B][E]
+    AD, CF, BF, AE = shortest[A][D], shortest[C][F], shortest[B][F], shortest[A][E]
+    d0 = AB + CD + EF
+    d1 = AB + CE + DF
+    d2 = AC + BD + EF
+    d3 = AC + BE + DF
+    d4 = AD + BE + CF
+    d5 = AD + CE + BF
+    d6 = AE + BD + CF
+    d7 = AE + CD + BF
+    
+    # d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
+    # d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
+    # d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
+    # d3 = shortest[A][C] + shortest[B][E] + shortest[D][F]
+    # d4 = shortest[A][D] + shortest[E][B] + shortest[C][F]
+    # d5 = shortest[A][D] + shortest[E][C] + shortest[B][F]
+    # d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
+    # d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
 
     
     swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
@@ -643,6 +655,31 @@ def solve_from_file(input_file, output_directory, params=[]):
         os.makedirs(output_directory)
     
     convertToFile(car_path, drop_offs, output_file, list_locations)
+
+def improve_from_file(input_file, output_directory, parapms = []):
+    print('Processing %s' % (input_file))
+    
+    input_data = utils.read_file(input_file)
+    num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
+    car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+
+    new_cost, _ = student_utils.cost_of_solution(G, car_path, drop_offs)
+
+    basename, filename = os.path.split(input_file)
+    output_filename = utils.input_to_output(filename, "")
+    output_file = f'{output_directory}/{output_filename}'
+    output_data = utils.read_file(output_file)
+    car_cycle = convert_locations_to_indices(car_cycle, list_locations)
+    old_cost, _ = student_utils.cost_of_solution(G, car_cycle, drop_offs)
+
+    if new_cost < old_cost:
+        print(input_file, "improved from", old_cost, 'to', new_cost)
+        if not os.path.exists(output_directory):
+            os.makedirs(output_directory)
+        convertToFile(car_path, drop_offs, output_file, list_locations)
+    else:
+        print("No improvments made for", input_file)
 
 
 def solve_all(input_directory, output_directory, params=[]):
