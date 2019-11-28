@@ -180,8 +180,11 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = three_opt(new_tour, shortest)
+            start_index = new_tour.index(starting_car_location)
+            new_tour = new_tour[start_index:] + new_tour[:start_index]
+            t_tour = new_tour + [starting_car_location]
             new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
-            new_drive_cost = calc_driving_cost(new_tour, shortest)
+            new_drive_cost = calc_driving_cost(t_tour, shortest)
             new_cost = new_walk_cost + new_drive_cost
             if new_cost < bestCost:
                 bestStop = bstop
@@ -196,6 +199,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             # sys.stdout.flush()
         else:
             loop = 0
+    tour = tour + [starting_car_location]
     car_path = generate_full_path(tour, G)
     drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
@@ -238,9 +242,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
                 remain_bus_stop.remove(b)
             minCost = bestCost
             tour = bestTour
-            #print(minCost)
-            #sys.stdout.write(str(minCost) + '\n')  # same as print
-            #sys.stdout.flush()
+
         else:
             loop = 0
     tour = three_opt(tour, shortest)
@@ -409,21 +411,40 @@ def calculateGain( A,B,C,D,E,F, shortest):
 performs the 3 edge swap
 """
 def move3(tour, i, j, k, case):
+    #i = i -1
+    #j = j - 1
+    #k = k - 1
+    #print(i,j,k)
+    N = len(tour)
     if case == 1:
-        tour[j:k] = reversed(tour[j:k])
+        #tour[j:k] = reversed(tour[j:k])
+        tour = reverse_segment(tour, (k+1)%N, i)
     elif case == 2:
-        tour[i:j] = reversed(tour[i:j])
+        #tour[i:j] = reversed(tour[i:j])
+        #tour[(j+1)%N :k] = reversed(tour[(j+1)%N :k])
+        tour = reverse_segment(tour, (j+1) % N, k)
     elif case == 3:
-        tour[i:j] = reversed(tour[i:j])
-        tour[j:k] = reversed(tour[j:k])
+        #tour[i:j] = reversed(tour[i:j])
+        #tour[j:k] = reversed(tour[j:k])
+        #tour[(j+1)%N : k] = reversed(tour[(j+1)%N : k])
+        tour = reverse_segment(tour, (i+1)%N, j)
     elif case == 4:
-        tour = tour[:i] + tour[j:k] + tour[i:j] + tour[k:]
+        #tour = tour[:i] + tour[j:k] + tour[i:j] + tour[k:]
+        tour = reverse_segment(tour, (j+1)%N, k)
+        tour = reverse_segment(tour, (i+1)%N, j)
     elif case == 5:
-        tour = tour[:i] + tour[j:k] + list(reversed(tour[i:j])) + tour[k:]
+        #tour = tour[:i] + tour[j:k] + list(reversed(tour[i:j])) + tour[k:]
+        tour = reverse_segment(tour, (k+1)%N, i)
+        tour = reverse_segment(tour, (i+1)%N, j)
     elif case == 6:
-        tour = tour[:i] + list(reversed(tour[j:k])) + tour[i:j] + tour[k:]
+        #tour = tour[:i] + list(reversed(tour[j:k])) + tour[i:j] + tour[k:]
+        tour = reverse_segment(tour, (k+1)%N, i)
+        tour = reverse_segment(tour, (j+1)%N, k)
     elif case == 7:
-        tour = tour[:i] + list(reversed(tour[j:k])) + list(reversed(tour[i:j])) + tour[k:]
+        #tour = tour[:i] + list(reversed(tour[j:k])) + list(reversed(tour[i:j])) + tour[k:]
+        tour = reverse_segment(tour, (k+1)%N, i)
+        tour = reverse_segment(tour, (i+1)%N, j)
+        tour = reverse_segment(tour, (j+1)%N, k)
     return tour
 """
 generates a list that contain all possible 3 edge combinations
@@ -465,40 +486,70 @@ def two_opt( tour,  shortest):
             tour[bestSwap[0]:bestSwap[1]] = tour[bestSwap[1]-1:bestSwap[0]-1:-1]
     return tour
 
-
+def max_gain_from_3_opt(x1, x2, y1, y2, z1, z2, shortest):
+    cdef double x1x2 = shortest[x1][x2]
+    cdef double z1z2 = shortest[z1][z2]
+    cdef double x1z1 = shortest[x1][z1]
+    cdef double x2z2 = shortest[x2][z2]
+    cdef double y1y2 = shortest[y1][y2]
+    cdef double y1z1 = shortest[y1][z1]
+    cdef double y2z2 = shortest[y2][z2]
+    cdef double x1y1 = shortest[x1][y1]
+    cdef double x2y2 = shortest[x2][y2]
+    cdef double y1z2 = shortest[y1][z2]
+    cdef double x1y2 = shortest[x1][y2]
+    cdef double x2z1 = shortest[x2][z1]
+    delLength = x1x2 + y1y2 + z1z2
+    opt0 = (0,0)
+    opt1 = (x1x2 + z1z2 - x1z1 - x2z2, 1)
+    opt2 = (y1y2 + z1z2 - y1z1 - y2z2, 2)
+    opt3 = (x1x2 + y1y2 - x1y1 - x2y2, 3)
+    opt4 = (delLength - x1y1 - x2z1 - y2z2, 4)
+    opt5 = (delLength - x1z1 - x2y2 - y1z2, 5)
+    opt6 = (delLength - x1y2 - y1z1 - x2z2, 6)
+    opt7 = (delLength - x1y2 - x2z1 - y1z2, 7)
+    ls = [opt0, opt1, opt2, opt3, opt4, opt5, opt6, opt7]
+    #ls = [opt0, opt3, opt6, opt7]
+    val = max(ls, key = lambda x : x[0])
+    if val[0] >= 0.00001:
+        return val
+    else:
+        return (0,0)
 
 """
 best improving three opt
 """
 def three_opt(tour, shortest):
-    # for i in range(1,len(tour) - 2):
-    #     for j in range(i+2, len(tour) - 1):
-    #         for k in range(j+2, len(tour)):
-    #             yield (i,j,k)
-    cdef int loop = 1
-    while loop:
+    cdef int local_optimal = 0
+    cdef int N = len(tour)
+    while not local_optimal:
+        local_optimal = 1
+        best_gain = 0
+        best_case = 0
         bestMove = None
-        bestGain = 0
-        bestCase = 0
-        for i in xrange(1, len(tour) -2):
-            A = tour[i-1]
-            B = tour[i]
-            for j in xrange(i + 2, len(tour) - 1):
-                C = tour[j-1]
-                D = tour[j]
-                for k in xrange(j+2, len(tour)):
-                    E = tour[k-1]
-                    F = tour[k]
-                    currentGain, currentCase = calculateGain(A,B,C,D,E,F, shortest)
-                    if bestGain > currentGain:
-                        bestGain, bestCase = currentGain, currentCase
+        for counter_1 in xrange(N):
+            i = counter_1
+            X1 = tour[i]
+            X2 = tour[(i+1) % N]
+            for counter_2 in xrange(1, N - 2):
+                j = (i + counter_2) % N
+                Y1 = tour[j]
+                Y2 = tour[(j+1) % N]
+                for counter_3 in xrange(counter_2 + 1, N):
+                    k = (i + counter_3) % N
+                    Z1 = tour[k]
+                    Z2 = tour[(k+1) % N]
+                    currentGain, currentCase = max_gain_from_3_opt(X1, X2, Y1, Y2, Z1, Z2, shortest)
+                    if currentGain > best_gain:
+                        best_gain, best_case = currentGain, currentCase
                         bestMove = (i,j,k)
-        if bestGain >= -0.00001:
-            loop = 0
-        else:
-            i,j,k = bestMove
-            tour = move3(tour, i, j, k, bestCase)
+                        local_optimal = 0
+
+        if not local_optimal:
+            tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
+
     return tour
+
 """
 first improving three opt
 """
