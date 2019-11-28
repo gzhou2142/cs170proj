@@ -516,6 +516,19 @@ def max_gain_from_3_opt(x1, x2, y1, y2, z1, z2, shortest):
     else:
         return (0,0)
 
+def reverse_segment(tour, start, end):
+    #return tour
+    N = len(tour)
+    #tour[x: y + 1] = reversed(tour[x: y + 1])
+    inversionSize = int(((N + end - start + 1)%N)/2)
+    left = start
+    right = end
+    for c in range(1, inversionSize + 1):
+        tour[left],tour[right] = tour[right],tour[left]
+        left = (left + 1) % N
+        right = (N + right - 1) %N
+    return tour
+	
 """
 best improving three opt
 """
