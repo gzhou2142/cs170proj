@@ -16130,7 +16130,7 @@ static PyObject *__pyx_pf_13solver_cython_35max_gain_from_3_opt(CYTHON_UNUSED Py
  *     cdef double y1z2 = shortest[y1][z2]
  *     cdef double x1y2 = shortest[x1][y2]             # <<<<<<<<<<<<<<
  *     cdef double x2z1 = shortest[x2][z1]
- *     delLength = x1x2 + y1y2 + z1z2
+ *     cdef double delLength = x1x2 + y1y2 + z1z2
  */
   __pyx_t_1 = __Pyx_PyObject_GetItem(__pyx_v_shortest, __pyx_v_x1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 503, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -16145,7 +16145,7 @@ static PyObject *__pyx_pf_13solver_cython_35max_gain_from_3_opt(CYTHON_UNUSED Py
  *     cdef double y1z2 = shortest[y1][z2]
  *     cdef double x1y2 = shortest[x1][y2]
  *     cdef double x2z1 = shortest[x2][z1]             # <<<<<<<<<<<<<<
- *     delLength = x1x2 + y1y2 + z1z2
+ *     cdef double delLength = x1x2 + y1y2 + z1z2
  *     opt0 = (0,0)
  */
   __pyx_t_2 = __Pyx_PyObject_GetItem(__pyx_v_shortest, __pyx_v_x2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 504, __pyx_L1_error)
@@ -16160,7 +16160,7 @@ static PyObject *__pyx_pf_13solver_cython_35max_gain_from_3_opt(CYTHON_UNUSED Py
   /* "solver_cython.pyx":505
  *     cdef double x1y2 = shortest[x1][y2]
  *     cdef double x2z1 = shortest[x2][z1]
- *     delLength = x1x2 + y1y2 + z1z2             # <<<<<<<<<<<<<<
+ *     cdef double delLength = x1x2 + y1y2 + z1z2             # <<<<<<<<<<<<<<
  *     opt0 = (0,0)
  *     opt1 = (x1x2 + z1z2 - x1z1 - x2z2, 1)
  */
@@ -16168,7 +16168,7 @@ static PyObject *__pyx_pf_13solver_cython_35max_gain_from_3_opt(CYTHON_UNUSED Py
 
   /* "solver_cython.pyx":506
  *     cdef double x2z1 = shortest[x2][z1]
- *     delLength = x1x2 + y1y2 + z1z2
+ *     cdef double delLength = x1x2 + y1y2 + z1z2
  *     opt0 = (0,0)             # <<<<<<<<<<<<<<
  *     opt1 = (x1x2 + z1z2 - x1z1 - x2z2, 1)
  *     opt2 = (y1y2 + z1z2 - y1z1 - y2z2, 2)
@@ -16177,7 +16177,7 @@ static PyObject *__pyx_pf_13solver_cython_35max_gain_from_3_opt(CYTHON_UNUSED Py
   __pyx_v_opt0 = __pyx_tuple__4;
 
   /* "solver_cython.pyx":507
- *     delLength = x1x2 + y1y2 + z1z2
+ *     cdef double delLength = x1x2 + y1y2 + z1z2
  *     opt0 = (0,0)
  *     opt1 = (x1x2 + z1z2 - x1z1 - x2z2, 1)             # <<<<<<<<<<<<<<
  *     opt2 = (y1y2 + z1z2 - y1z1 - y2z2, 2)
