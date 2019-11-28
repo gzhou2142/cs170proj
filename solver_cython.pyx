@@ -106,9 +106,9 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     _, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
-	start_index = visit_order.index(starting_car_location)
+    start_index = visit_order.index(starting_car_location)
     visit_order = visit_order[start_index:] + visit_order[:start_index] + [starting_car_location]
-    visit_order = three_opt(visit_order, all_pairs_shortest_path)
+	visit_order = three_opt(visit_order, all_pairs_shortest_path)
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
