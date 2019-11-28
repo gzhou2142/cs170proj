@@ -106,9 +106,10 @@ def three_opt_solver(list_of_locations, list_of_homes, starting_car_location, ad
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     _, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
+    visit_order = three_opt(visit_order, all_pairs_shortest_path)
+    #visit_order.append(starting_car_location)
     start_index = visit_order.index(starting_car_location)
     visit_order = visit_order[start_index:] + visit_order[:start_index] + [starting_car_location]
-    visit_order = three_opt(visit_order, all_pairs_shortest_path)
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
@@ -302,7 +303,7 @@ def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_p
         visitOrder.append(int(closestNode))
         set_of_locations.remove(closestNode)
     tour.extend(nx.shortest_path(G, source = int(tour.pop()), target = int(starting_car_location), weight = 'weight'))
-    visitOrder.append(int(starting_car_location))
+    #visitOrder.append(int(starting_car_location))
     return tour, visitOrder
 """
 finds a tour using nearest neighbor greedy algorithm. this is the same algorithm as above except it is optimized for the greedy_clustering_three_opt algorithm
@@ -501,7 +502,7 @@ def max_gain_from_3_opt(x1, x2, y1, y2, z1, z2, shortest):
     cdef double y1z2 = shortest[y1][z2]
     cdef double x1y2 = shortest[x1][y2]
     cdef double x2z1 = shortest[x2][z1]
-    delLength = x1x2 + y1y2 + z1z2
+    cdef double delLength = x1x2 + y1y2 + z1z2
     opt0 = (0,0)
     opt1 = (x1x2 + z1z2 - x1z1 - x2z2, 1)
     opt2 = (y1y2 + z1z2 - y1z1 - y2z2, 2)
@@ -530,7 +531,7 @@ def reverse_segment(tour, start, end):
         left = (left + 1) % N
         right = (N + right - 1) %N
     return tour
-	
+
 """
 best improving three opt
 """
