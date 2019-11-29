@@ -73,6 +73,10 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         car_path, drop_off = greedy_clustering_two_opt(locations, homes, start, adjacency_matrix, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
+    elif params[0] == 'remove_swap':
+        car_path,drop_off = remove_swap(locations, homes, start, adjacency_matrix, int(params[1]))
+        print("--- %s seconds ---" % (time.time() - start_time))
+        return car_path, drop_off
     else:
         pass
 
@@ -121,7 +125,11 @@ def two_opt_solver(list_of_locations, list_of_homes, starting_car_location, adja
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     _, visit_order = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
+
     visit_order = two_opt(visit_order, all_pairs_shortest_path)
+    start_index = visit_order.index(starting_car_location)
+    visit_order = visit_order[start_index:] + visit_order[:start_index] + [starting_car_location]
+
     car_path = generate_full_path(visit_order, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
@@ -180,12 +188,14 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
         for bstop in bstops:
             new_tour = tour + bstop
-            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
             new_tour = three_opt(new_tour, shortest)
             start_index = new_tour.index(starting_car_location)
             new_tour = new_tour[start_index:] + new_tour[:start_index]
             t_tour = new_tour + [starting_car_location]
+            #need to generate full graph for drop off calculation
+            #full_path = generate_full_path(t_tour, G)
+            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
             new_drive_cost = calc_driving_cost(t_tour, shortest)
             new_cost = new_walk_cost + new_drive_cost
@@ -204,15 +214,106 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             loop = 0
     tour = tour + [starting_car_location]
     car_path = generate_full_path(tour, G)
-    drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     #utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
     #print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
     return car_path, drop_off
 
+def rotate_to_start(tour, starting_car_location):
+    start_index = tour.index(starting_car_location)
+    return tour[start_index:] + tour[:start_index]
 
-def greedy_swap(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
-    pass
+def find_k_closest(k, start, list, shortest):
+    distance_dict = {}
+    for l in list:
+        distance_dict[l] = shortest[start][l]
+    sorted_dis = sorted(distance_dict.items(), key = lambda kv: kv[1])
+    sorted_dis = sorted_dis[1:k+1]
+    sorted_nodes = [x[0] for x in sorted_dis]
+    return sorted_nodes
+
+def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    shortest = dict(nx.floyd_warshall(G))
+
+    set_homes = set(list_of_homes)
+    set_homes.add(starting_car_location)
+
+    tour = list(set_homes)
+    remain_bus_stop = set(list_of_locations) - set_homes
+    tour = fast_nearest_neighbor_path(tour, starting_car_location, shortest)
+    tour = three_opt(tour, shortest)
+    tour = rotate_to_start(tour, starting_car_location)
+
+
+    t_tour = tour + [starting_car_location]
+    drop_off_map = find_drop_off_mapping(generate_full_path(t_tour, G), list_of_homes, shortest)
+
+    cdef double best_cost = calc_walking_cost(drop_off_map, shortest) + calc_driving_cost(t_tour, shortest)
+    best_tour = tour
+    best_drop_off_map = drop_off_map
+    cdef int loop = 1
+    #print(best_cost)
+    #print(best_tour)
+    while loop:
+        loop = 0
+        local_cost = best_cost
+        local_tour = best_tour
+        for t in best_tour:
+            if t == starting_car_location:
+                continue
+            #remove
+            new_set_homes = set_homes - {t}
+            new_removal_tour = fast_nearest_neighbor_path(list(new_set_homes), starting_car_location, shortest)
+            new_removal_tour = three_opt(new_removal_tour, shortest)
+            new_removal_tour = rotate_to_start(new_removal_tour, starting_car_location)
+            t_tour = new_removal_tour + [starting_car_location]
+            new_removal_full_path = generate_full_path(t_tour, G)
+            new_drop_off_map = find_drop_off_mapping(new_removal_full_path, list_of_homes, shortest)
+            removal_cost =  calc_driving_cost(t_tour, shortest) + calc_walking_cost(new_drop_off_map, shortest)
+            #print(t)
+            if removal_cost < local_cost:
+
+                local_cost = removal_cost
+                #print(local_cost)
+                local_tour = new_removal_tour
+                loop = 1
+            #add neighbors
+            remain_bus_stop.add(t)
+            k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)
+            k_closest_subsets = findsubsets(k_closest, len(k_closest))
+            remain_bus_stop.remove(t)
+            #print(t)
+            #print(k_closest)
+            for s in k_closest_subsets:
+                add_set_homes = new_set_homes | set(s)
+                new_add_tour = fast_nearest_neighbor_path(list(add_set_homes), starting_car_location, shortest)
+                new_add_tour = three_opt(new_add_tour, shortest)
+                new_add_tour = rotate_to_start(new_add_tour, starting_car_location)
+                t_tour = new_add_tour + [starting_car_location]
+                new_add_full_path = generate_full_path(t_tour, G)
+                new_drop_off_map = find_drop_off_mapping(new_add_full_path, list_of_homes, shortest)
+                add_cost = calc_driving_cost(t_tour, shortest) + calc_walking_cost(new_drop_off_map, shortest)
+                if add_cost < local_cost:
+                    local_cost = add_cost
+                    #print(local_cost)
+                    local_tour = new_add_tour
+                    loop = 1
+        #print(best_cost)
+        best_cost = local_cost
+        #print(best_cost)
+        best_tour = local_tour
+        #print(best_tour)
+
+    best_tour = best_tour + [starting_car_location]
+    full_best_tour = generate_full_path(best_tour, G)
+    best_drop_off_map = find_drop_off_mapping(full_best_tour, list_of_homes, shortest)
+    return full_best_tour, best_drop_off_map
+
+
+
+
 """
 Greedy clustering using two opt local seearch.
 """
@@ -226,7 +327,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
     #min_walk_cost = calc_walking_cost(drop_off_map, shortest)
     #min_drive_cost =  calc_driving_cost(tour, shortest)
     #minCost = min_walk_cost + min_drive_cost
-    cdef double minCost = calc_walking_cost(drop_off_map, shortest)
+    cdef double minCost = calc_walking_cost(drop_off_map, shortest) + calc_driving_cost(tour, shortest)
     cdef int loop = 1
     while loop:
         bestTour = None
@@ -337,7 +438,29 @@ def fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
 
     return tour
 
+def fast_nearest_neighbor_path(locations, starting_car_locations, shortest):
+    if len(locations) == 1:
+        return [starting_car_locations]
+    cdef set set_of_locations = set(locations)
+    set_of_locations.add(starting_car_locations)
+    cdef list tour = [starting_car_locations]
+    set_of_locations.remove(starting_car_locations)
+    cdef int remaining_locations = len(set_of_locations)
+    cdef int current_node = tour[-1]
+    while remaining_locations > 0:
+        current_node = tour[-1]
+        closestLen = float('inf')
+        closestNode = None
+        for n in set_of_locations:
+            if shortest[int(current_node)][int(n)] < closestLen:
+                closestLen = shortest[int(current_node)][int(n)]
+                closestNode = int(n)
+        tour.append(closestNode)
+        set_of_locations.remove(closestNode)
+        remaining_locations -= 1
+    #tour.append(starting_car_locations)
 
+    return tour
 
 """
 returns optimal drop off mapping
@@ -472,27 +595,65 @@ def all_segments(tour):
             for k in range(j+2, len(tour)):
                 yield (i,j,k)
     #return segments
+
+def gain_two_opt(X1, X2, Y1, Y2, shortest):
+    cdef double del_length = shortest[X1][X2] + shortest[Y1][Y2]
+    cdef double add_length = shortest[X1][Y1] + shortest[X2][Y2]
+    return del_length - add_length
+
+def make_2_opt_move(tour, i, j):
+    return reverse_segment(tour, (i + 1) % len(tour), j)
+
 """
 Two opt
 """
-def two_opt( tour,  shortest):
-    cdef list best = tour
-    cdef int improved = 1
-    while improved:
-        improved = 0
-        gain = 0
-        bestSwap = None
-        for i in range(1, len(tour) - 2):
-            for j in range(i + 1, len(tour)):
-                A,B,C,D = tour[i-1], tour[i], tour[j-1], tour[j]
-                currentGain = shortest[A][C] + shortest[B][D] - (shortest[A][B] + shortest[C][D])
-                if currentGain < gain:
-                    gain = currentGain
-                    bestSwap = (i, j)
-                    improved = 1
-        if bestSwap != None:
-            tour[bestSwap[0]:bestSwap[1]] = tour[bestSwap[1]-1:bestSwap[0]-1:-1]
+def two_opt(tour, shortest):
+    cdef int local_optimal = 0
+    cdef int N = len(tour)
+    while not local_optimal:
+        local_optimal = 1
+        best_gain = 0
+        best_move = None
+        for counter_1 in range(N - 2):
+            i = counter_1
+            X1 = tour[i]
+            X2 = tour[(i+1)%N]
+            counter_2_Limit = 0
+            if i == 0:
+                counter_2_Limit = N -1
+            else:
+                counter_2_Limit = N
+            for counter_2 in range(i+2, counter_2_Limit):
+                j = counter_2
+                Y1 = tour[j]
+                Y2 = tour[(j+1) %N]
+                gain_expected = gain_two_opt(X1,X2,Y1,Y2, shortest)
+                if gain_expected > best_gain:
+                    best_gain = gain_expected
+                    best_move = (i,j)
+                    local_optimal = 0
+        if not local_optimal:
+            tour = make_2_opt_move(tour, best_move[0], best_move[1])
     return tour
+# def two_opt( tour,  shortest):
+#     cdef list best = tour
+#     cdef int improved = 1
+#     while improved:
+#         improved = 0
+#         gain = 0
+#         bestSwap = None
+#         for i in range(1, len(tour) - 2):
+#             for j in range(i + 1, len(tour)):
+#                 A,B,C,D = tour[i-1], tour[i], tour[j-1], tour[j]
+#                 currentGain = shortest[A][C] + shortest[B][D] - (shortest[A][B] + shortest[C][D])
+#                 if currentGain < gain:
+#                     gain = currentGain
+#                     bestSwap = (i, j)
+#                     improved = 1
+#         if bestSwap != None:
+#             tour[bestSwap[0]:bestSwap[1]] = tour[bestSwap[1]-1:bestSwap[0]-1:-1]
+#     return tour
+
 
 def max_gain_from_3_opt(x1, x2, y1, y2, z1, z2, shortest):
     cdef double x1x2 = shortest[x1][x2]
@@ -621,9 +782,9 @@ def build_tour_graph(G, tour, all_pairs_shortest_path):
 finds TSP tour using ant colony optimization
 """
 def ant_colony_tour(G, start):
-    solver = aco.Solver(rho=0.01, q = 1)
-    colony = aco.Colony(alpha = 1, beta = 5)
-    tour = solver.solve(G, colony, limit = 300, gen_size = 1000 )#, gen_size = 100)
+    solver = aco.Solver(rho=0.1, q = 1)
+    colony = aco.Colony(alpha = 1, beta = 3)
+    tour = solver.solve(G, colony, limit = 500, gen_size = 1000)#, gen_size = 100)
     tour_list = tour.nodes
     start_index = tour_list.index(int(start))
     tour_list = tour_list[start_index:] + tour_list [:start_index] + [int(start)]
