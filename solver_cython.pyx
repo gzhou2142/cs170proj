@@ -265,12 +265,13 @@ def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacenc
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
     _, tour = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
-    tour = tour[1:]
+    #tour = tour[1:]
+
     newGraph = build_tour_graph(G, tour, all_pairs_shortest_path)
     solution = ant_colony_tour(newGraph, starting_car_location)
     car_path = generate_full_path(solution, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
-    cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
+    #cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     #utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
     #print(len(list_of_locations),'locations', 'ant_colony:', cost)
     return car_path, drop_off
@@ -622,7 +623,7 @@ finds TSP tour using ant colony optimization
 def ant_colony_tour(G, start):
     solver = aco.Solver(rho=0.01, q = 1)
     colony = aco.Colony(alpha = 1, beta = 5)
-    tour = solver.solve(G, colony, limit = 500, gen_size = 1000)
+    tour = solver.solve(G, colony, limit = 300, gen_size = 1000 )#, gen_size = 100)
     tour_list = tour.nodes
     start_index = tour_list.index(int(start))
     tour_list = tour_list[start_index:] + tour_list [:start_index] + [int(start)]
