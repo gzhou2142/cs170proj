@@ -210,6 +210,9 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
     #print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
     return car_path, drop_off
 
+
+def greedy_swap(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
+    pass
 """
 Greedy clustering using two opt local seearch.
 """
@@ -257,6 +260,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
     return car_path, drop_off
 
 
+
 def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
@@ -267,8 +271,8 @@ def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacenc
     car_path = generate_full_path(solution, G)
     drop_off = find_drop_off_mapping(car_path, list_of_homes, all_pairs_shortest_path)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
-    utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
-    print(len(list_of_locations),'locations', 'ant_colony:', cost)
+    #utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
+    #print(len(list_of_locations),'locations', 'ant_colony:', cost)
     return car_path, drop_off
 
 
