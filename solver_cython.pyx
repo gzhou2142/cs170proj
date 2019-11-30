@@ -303,7 +303,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
         #print(best_cost)
         best_tour = local_tour
         #print(best_tour)
-        print(best_cost)
+        #print(best_cost)
 
     best_tour = best_tour + [starting_car_location]
     full_best_tour = generate_full_path(best_tour, G)
@@ -839,22 +839,6 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
         string += strDrop
     utils.write_to_file(path_to_file, string)
 
-def get_adjacency_matrix(input_file):
-    input_data = utils.read_file(input_file)
-    num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
-    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
-    shortest =  dict(nx.floyd_warshall(G))
-    graph = build_tour_graph(G, list_houses, shortest)
-    matrx = nx.to_numpy_matrix(graph)
-    result = ""
-    print(matrx[0])
-    # for m in matrx:
-    #     st = ""
-    #     for i in m:
-    #         i = i * 100000
-    #         st = st + str(i) + " "
-    #     result = result + st + '\n'
-    # utils.write_to_file('matrix_test.out', result)
 
 
 def solve_from_file(input_file, output_directory, params=[]):
