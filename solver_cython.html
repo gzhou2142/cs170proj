@@ -6939,7 +6939,7 @@ static PyObject *__pyx_pw_13solver_cython_21remove_swap(PyObject *__pyx_self, Py
   PyObject *__pyx_v_list_of_homes = 0;
   PyObject *__pyx_v_starting_car_location = 0;
   PyObject *__pyx_v_adjacency_matrix = 0;
-  CYTHON_UNUSED PyObject *__pyx_v_bus_stop_look_ahead = 0;
+  PyObject *__pyx_v_bus_stop_look_ahead = 0;
   PyObject *__pyx_r = 0;
   <span class='refnanny'>__Pyx_RefNannyDeclarations</span>
   <span class='refnanny'>__Pyx_RefNannySetupContext</span>("remove_swap (wrapper)", 0);
@@ -7026,7 +7026,7 @@ static PyObject *__pyx_pw_13solver_cython_21remove_swap(PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, CYTHON_UNUSED PyObject *__pyx_v_bus_stop_look_ahead) {
+static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, PyObject *__pyx_v_bus_stop_look_ahead) {
   PyObject *__pyx_v_G = NULL;
   CYTHON_UNUSED PyObject *__pyx_v__ = NULL;
   PyObject *__pyx_v_shortest = NULL;
@@ -8007,7 +8007,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_8);
       <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_2); __pyx_t_2 = 0;
       <span class='pyx_macro_api'>__Pyx_DECREF</span>(__pyx_t_8); __pyx_t_8 = 0;
-</pre><pre class="cython line score-44" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">284</span>:             k_closest = find_k_closest(3, t, remain_bus_stop, shortest)</pre>
+</pre><pre class="cython line score-44" onclick="(function(s){s.display=s.display==='block'?'none':'block'})(this.nextElementSibling.style)">+<span class="">284</span>:             k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)</pre>
 <pre class='cython code score-44 '>      <span class='pyx_c_api'>__Pyx_GetModuleGlobalName</span>(__pyx_t_2, __pyx_n_s_find_k_closest);<span class='error_goto'> if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 284, __pyx_L1_error)</span>
       <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_2);
       __pyx_t_1 = NULL;
@@ -8024,7 +8024,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       }
       #if CYTHON_FAST_PYCALL
       if (<span class='py_c_api'>PyFunction_Check</span>(__pyx_t_2)) {
-        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_int_3, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
+        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_v_bus_stop_look_ahead, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
         __pyx_t_8 = <span class='pyx_c_api'>__Pyx_PyFunction_FastCall</span>(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 4+__pyx_t_7);<span class='error_goto'> if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)</span>
         <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_1); __pyx_t_1 = 0;
         <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_8);
@@ -8032,7 +8032,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       #endif
       #if CYTHON_FAST_PYCCALL
       if (<span class='pyx_c_api'>__Pyx_PyFastCFunction_Check</span>(__pyx_t_2)) {
-        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_int_3, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
+        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_v_bus_stop_look_ahead, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
         __pyx_t_8 = <span class='pyx_c_api'>__Pyx_PyCFunction_FastCall</span>(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 4+__pyx_t_7);<span class='error_goto'> if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)</span>
         <span class='pyx_macro_api'>__Pyx_XDECREF</span>(__pyx_t_1); __pyx_t_1 = 0;
         <span class='refnanny'>__Pyx_GOTREF</span>(__pyx_t_8);
@@ -8044,9 +8044,9 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
         if (__pyx_t_1) {
           <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_t_1); <span class='py_macro_api'>PyTuple_SET_ITEM</span>(__pyx_t_3, 0, __pyx_t_1); __pyx_t_1 = NULL;
         }
-        <span class='pyx_macro_api'>__Pyx_INCREF</span>(__pyx_int_3);
-        <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_int_3);
-        <span class='py_macro_api'>PyTuple_SET_ITEM</span>(__pyx_t_3, 0+__pyx_t_7, __pyx_int_3);
+        <span class='pyx_macro_api'>__Pyx_INCREF</span>(__pyx_v_bus_stop_look_ahead);
+        <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_v_bus_stop_look_ahead);
+        <span class='py_macro_api'>PyTuple_SET_ITEM</span>(__pyx_t_3, 0+__pyx_t_7, __pyx_v_bus_stop_look_ahead);
         <span class='pyx_macro_api'>__Pyx_INCREF</span>(__pyx_v_t);
         <span class='refnanny'>__Pyx_GIVEREF</span>(__pyx_v_t);
         <span class='py_macro_api'>PyTuple_SET_ITEM</span>(__pyx_t_3, 1+__pyx_t_7, __pyx_v_t);
