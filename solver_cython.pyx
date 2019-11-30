@@ -203,6 +203,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
                 bestStop = bstop
                 bestCost = new_cost
                 bestTour = new_tour
+            #print(tour)
         if bestCost < minCost:
             for b in bestStop:
                 remain_bus_stop.remove(int(b))
@@ -304,7 +305,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
         best_tour = local_tour
         #print(best_tour)
         #print(best_cost)
-        
+
 
     best_tour = best_tour + [starting_car_location]
     full_best_tour = generate_full_path(best_tour, G)
@@ -434,7 +435,7 @@ def fast_nearest_neighbor_tour(locations, starting_car_locations, shortest):
         tour.append(closestNode)
         set_of_locations.remove(closestNode)
         remaining_locations -= 1
-    tour.append(starting_car_locations)
+    #tour.append(starting_car_locations)
 
     return tour
 
