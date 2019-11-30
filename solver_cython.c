@@ -2380,7 +2380,7 @@ static PyObject *__pyx_pf_13solver_cython_14greedy_clustering_three_opt(CYTHON_U
 static PyObject *__pyx_pf_13solver_cython_16rotate_to_start(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_tour, PyObject *__pyx_v_starting_car_location); /* proto */
 static PyObject *__pyx_lambda_funcdef_lambda(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_kv); /* proto */
 static PyObject *__pyx_pf_13solver_cython_18find_k_closest(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_k, PyObject *__pyx_v_start, PyObject *__pyx_v_list, PyObject *__pyx_v_shortest); /* proto */
-static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, CYTHON_UNUSED PyObject *__pyx_v_bus_stop_look_ahead); /* proto */
+static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, PyObject *__pyx_v_bus_stop_look_ahead); /* proto */
 static PyObject *__pyx_pf_13solver_cython_22greedy_clustering_two_opt(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, PyObject *__pyx_v_bus_stop_look_ahead); /* proto */
 static PyObject *__pyx_pf_13solver_cython_24ant_colony(CYTHON_UNUSED PyObject *__pyx_self, CYTHON_UNUSED PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix); /* proto */
 static PyObject *__pyx_pf_13solver_cython_26nearest_neighbor_tour(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_locations, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_all_pairs_shortest_path, PyObject *__pyx_v_G); /* proto */
@@ -10280,7 +10280,7 @@ static PyObject *__pyx_pw_13solver_cython_21remove_swap(PyObject *__pyx_self, Py
   PyObject *__pyx_v_list_of_homes = 0;
   PyObject *__pyx_v_starting_car_location = 0;
   PyObject *__pyx_v_adjacency_matrix = 0;
-  CYTHON_UNUSED PyObject *__pyx_v_bus_stop_look_ahead = 0;
+  PyObject *__pyx_v_bus_stop_look_ahead = 0;
   PyObject *__pyx_r = 0;
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("remove_swap (wrapper)", 0);
@@ -10367,7 +10367,7 @@ static PyObject *__pyx_pw_13solver_cython_21remove_swap(PyObject *__pyx_self, Py
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, CYTHON_UNUSED PyObject *__pyx_v_bus_stop_look_ahead) {
+static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_list_of_locations, PyObject *__pyx_v_list_of_homes, PyObject *__pyx_v_starting_car_location, PyObject *__pyx_v_adjacency_matrix, PyObject *__pyx_v_bus_stop_look_ahead) {
   PyObject *__pyx_v_G = NULL;
   CYTHON_UNUSED PyObject *__pyx_v__ = NULL;
   PyObject *__pyx_v_shortest = NULL;
@@ -11533,7 +11533,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
  *                 loop = 1
  *             #add neighbors
  *             remain_bus_stop.add(t)             # <<<<<<<<<<<<<<
- *             k_closest = find_k_closest(3, t, remain_bus_stop, shortest)
+ *             k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)
  *             k_closest_subsets = findsubsets(k_closest, len(k_closest))
  */
       __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_v_remain_bus_stop, __pyx_n_s_add); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 283, __pyx_L1_error)
@@ -11558,7 +11558,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       /* "solver_cython.pyx":284
  *             #add neighbors
  *             remain_bus_stop.add(t)
- *             k_closest = find_k_closest(3, t, remain_bus_stop, shortest)             # <<<<<<<<<<<<<<
+ *             k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)             # <<<<<<<<<<<<<<
  *             k_closest_subsets = findsubsets(k_closest, len(k_closest))
  *             remain_bus_stop.remove(t)
  */
@@ -11578,7 +11578,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       }
       #if CYTHON_FAST_PYCALL
       if (PyFunction_Check(__pyx_t_2)) {
-        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_int_3, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
+        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_v_bus_stop_look_ahead, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
         __pyx_t_8 = __Pyx_PyFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 4+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
         __Pyx_GOTREF(__pyx_t_8);
@@ -11586,7 +11586,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       #endif
       #if CYTHON_FAST_PYCCALL
       if (__Pyx_PyFastCFunction_Check(__pyx_t_2)) {
-        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_int_3, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
+        PyObject *__pyx_temp[5] = {__pyx_t_1, __pyx_v_bus_stop_look_ahead, __pyx_v_t, __pyx_v_remain_bus_stop, __pyx_v_shortest};
         __pyx_t_8 = __Pyx_PyCFunction_FastCall(__pyx_t_2, __pyx_temp+1-__pyx_t_7, 4+__pyx_t_7); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 284, __pyx_L1_error)
         __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
         __Pyx_GOTREF(__pyx_t_8);
@@ -11598,9 +11598,9 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
         if (__pyx_t_1) {
           __Pyx_GIVEREF(__pyx_t_1); PyTuple_SET_ITEM(__pyx_t_3, 0, __pyx_t_1); __pyx_t_1 = NULL;
         }
-        __Pyx_INCREF(__pyx_int_3);
-        __Pyx_GIVEREF(__pyx_int_3);
-        PyTuple_SET_ITEM(__pyx_t_3, 0+__pyx_t_7, __pyx_int_3);
+        __Pyx_INCREF(__pyx_v_bus_stop_look_ahead);
+        __Pyx_GIVEREF(__pyx_v_bus_stop_look_ahead);
+        PyTuple_SET_ITEM(__pyx_t_3, 0+__pyx_t_7, __pyx_v_bus_stop_look_ahead);
         __Pyx_INCREF(__pyx_v_t);
         __Pyx_GIVEREF(__pyx_v_t);
         PyTuple_SET_ITEM(__pyx_t_3, 1+__pyx_t_7, __pyx_v_t);
@@ -11620,7 +11620,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
 
       /* "solver_cython.pyx":285
  *             remain_bus_stop.add(t)
- *             k_closest = find_k_closest(3, t, remain_bus_stop, shortest)
+ *             k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)
  *             k_closest_subsets = findsubsets(k_closest, len(k_closest))             # <<<<<<<<<<<<<<
  *             remain_bus_stop.remove(t)
  *             #print(t)
@@ -11681,7 +11681,7 @@ static PyObject *__pyx_pf_13solver_cython_20remove_swap(CYTHON_UNUSED PyObject *
       __pyx_t_8 = 0;
 
       /* "solver_cython.pyx":286
- *             k_closest = find_k_closest(3, t, remain_bus_stop, shortest)
+ *             k_closest = find_k_closest(bus_stop_look_ahead, t, remain_bus_stop, shortest)
  *             k_closest_subsets = findsubsets(k_closest, len(k_closest))
  *             remain_bus_stop.remove(t)             # <<<<<<<<<<<<<<
  *             #print(t)
@@ -21174,7 +21174,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
  *                         best_gain, best_case = currentGain, currentCase
  *                         bestMove = (i,j,k)             # <<<<<<<<<<<<<<
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  */
             __pyx_t_15 = PyTuple_New(3); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 727, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_15);
@@ -21194,7 +21194,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
  *                         best_gain, best_case = currentGain, currentCase
  *                         bestMove = (i,j,k)
  *                         local_optimal = 0             # <<<<<<<<<<<<<<
- * 
+ *         print(best_gain)
  *         if not local_optimal:
  */
             __pyx_v_local_optimal = 0;
@@ -21229,9 +21229,20 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
 
+    /* "solver_cython.pyx":729
+ *                         bestMove = (i,j,k)
+ *                         local_optimal = 0
+ *         print(best_gain)             # <<<<<<<<<<<<<<
+ *         if not local_optimal:
+ *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
+ */
+    __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_best_gain); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 729, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_8);
+    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
     /* "solver_cython.pyx":730
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  *         if not local_optimal:             # <<<<<<<<<<<<<<
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
  * 
@@ -21240,7 +21251,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
     if (__pyx_t_2) {
 
       /* "solver_cython.pyx":731
- * 
+ *         print(best_gain)
  *         if not local_optimal:
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)             # <<<<<<<<<<<<<<
  * 
@@ -21331,7 +21342,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
 
       /* "solver_cython.pyx":730
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  *         if not local_optimal:             # <<<<<<<<<<<<<<
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
  * 

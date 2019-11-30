@@ -726,7 +726,7 @@ def three_opt(tour, shortest):
                         best_gain, best_case = currentGain, currentCase
                         bestMove = (i,j,k)
                         local_optimal = 0
-
+        print(best_gain)
         if not local_optimal:
             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
 
