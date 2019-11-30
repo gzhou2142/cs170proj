@@ -680,7 +680,7 @@ def max_gain_from_3_opt(x1, x2, y1, y2, z1, z2, shortest):
     ls = [opt0, opt1, opt2, opt3, opt4, opt5, opt6, opt7]
     #ls = [opt0, opt3, opt6, opt7]
     val = max(ls, key = lambda x : x[0])
-    if val[0] >= 0.00001:
+    if val[0] >= 0.000017:
         return val
     else:
         return (0,0)
