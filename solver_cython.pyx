@@ -304,6 +304,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
         best_tour = local_tour
         #print(best_tour)
         #print(best_cost)
+        
 
     best_tour = best_tour + [starting_car_location]
     full_best_tour = generate_full_path(best_tour, G)
