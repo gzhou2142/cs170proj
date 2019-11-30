@@ -21174,7 +21174,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
  *                         best_gain, best_case = currentGain, currentCase
  *                         bestMove = (i,j,k)             # <<<<<<<<<<<<<<
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  */
             __pyx_t_15 = PyTuple_New(3); if (unlikely(!__pyx_t_15)) __PYX_ERR(0, 727, __pyx_L1_error)
             __Pyx_GOTREF(__pyx_t_15);
@@ -21194,7 +21194,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
  *                         best_gain, best_case = currentGain, currentCase
  *                         bestMove = (i,j,k)
  *                         local_optimal = 0             # <<<<<<<<<<<<<<
- * 
+ *         print(best_gain)
  *         if not local_optimal:
  */
             __pyx_v_local_optimal = 0;
@@ -21229,9 +21229,20 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
       __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
     }
 
+    /* "solver_cython.pyx":729
+ *                         bestMove = (i,j,k)
+ *                         local_optimal = 0
+ *         print(best_gain)             # <<<<<<<<<<<<<<
+ *         if not local_optimal:
+ *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
+ */
+    __pyx_t_8 = __Pyx_PyObject_CallOneArg(__pyx_builtin_print, __pyx_v_best_gain); if (unlikely(!__pyx_t_8)) __PYX_ERR(0, 729, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_8);
+    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
+
     /* "solver_cython.pyx":730
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  *         if not local_optimal:             # <<<<<<<<<<<<<<
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
  * 
@@ -21240,7 +21251,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
     if (__pyx_t_2) {
 
       /* "solver_cython.pyx":731
- * 
+ *         print(best_gain)
  *         if not local_optimal:
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)             # <<<<<<<<<<<<<<
  * 
@@ -21331,7 +21342,7 @@ static PyObject *__pyx_pf_13solver_cython_51three_opt(CYTHON_UNUSED PyObject *__
 
       /* "solver_cython.pyx":730
  *                         local_optimal = 0
- * 
+ *         print(best_gain)
  *         if not local_optimal:             # <<<<<<<<<<<<<<
  *             tour = move3(tour, bestMove[0], bestMove[1], bestMove[2], best_case)
  * 
