@@ -194,8 +194,8 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             new_tour = new_tour[start_index:] + new_tour[:start_index]
             t_tour = new_tour + [starting_car_location]
             #need to generate full graph for drop off calculation
-            #full_path = generate_full_path(t_tour, G)
-            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
+            full_path = generate_full_path(t_tour, G)
+            new_drop_off_map = find_drop_off_mapping(full_path, list_of_homes, shortest)
             new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
             new_drive_cost = calc_driving_cost(t_tour, shortest)
             new_cost = new_walk_cost + new_drive_cost
@@ -254,8 +254,6 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
     best_tour = tour
     best_drop_off_map = drop_off_map
     cdef int loop = 1
-    #print(best_cost)
-    #print(best_tour)
     while loop:
         loop = 0
         local_cost = best_cost
@@ -266,7 +264,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
             #remove
             new_set_homes = set_homes - {t}
             new_removal_tour = fast_nearest_neighbor_path(list(new_set_homes), starting_car_location, shortest)
-            new_removal_tour = three_opt(new_removal_tour, shortest)
+            new_removal_tour = two_opt(new_removal_tour, shortest)
             new_removal_tour = rotate_to_start(new_removal_tour, starting_car_location)
             t_tour = new_removal_tour + [starting_car_location]
             new_removal_full_path = generate_full_path(t_tour, G)
@@ -289,7 +287,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
             for s in k_closest_subsets:
                 add_set_homes = new_set_homes | set(s)
                 new_add_tour = fast_nearest_neighbor_path(list(add_set_homes), starting_car_location, shortest)
-                new_add_tour = three_opt(new_add_tour, shortest)
+                new_add_tour = two_opt(new_add_tour, shortest)
                 new_add_tour = rotate_to_start(new_add_tour, starting_car_location)
                 t_tour = new_add_tour + [starting_car_location]
                 new_add_full_path = generate_full_path(t_tour, G)
@@ -305,6 +303,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
         #print(best_cost)
         best_tour = local_tour
         #print(best_tour)
+        print(best_cost)
 
     best_tour = best_tour + [starting_car_location]
     full_best_tour = generate_full_path(best_tour, G)
