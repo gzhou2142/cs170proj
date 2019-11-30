@@ -303,7 +303,7 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
         #print(best_cost)
         best_tour = local_tour
         #print(best_tour)
-        print(best_cost)
+        #print(best_cost)
 
     best_tour = best_tour + [starting_car_location]
     full_best_tour = generate_full_path(best_tour, G)
@@ -838,6 +838,8 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
         strDrop += '\n'
         string += strDrop
     utils.write_to_file(path_to_file, string)
+
+
 
 def solve_from_file(input_file, output_directory, params=[]):
     print('Processing', input_file)

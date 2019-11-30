@@ -36,7 +36,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
     locations = student_utils.convert_locations_to_indices(list_of_locations, list_of_locations)
     homes = student_utils.convert_locations_to_indices(list_of_homes, list_of_locations)
     start = list_of_locations.index(starting_car_location)
-    
+
     start_time = time.time()
 
     if params[0] == 'naive':
@@ -76,7 +76,7 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
 
 """
 makes everyone walk back home.
-""" 
+"""
 def naive_solver(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     car_path = [int(starting_car_location)]
@@ -141,7 +141,7 @@ def mst_solver(list_of_locations, list_of_homes, starting_car_location, adjacenc
     utils.write_data_to_file('logs/mst.log', [cost], separator = '\n', append = True)
     print(len(list_of_locations),'locations', 'mst:', cost)
     return car_path, drop_off
-    
+
 
 
 """
@@ -162,7 +162,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    min_walk_cost = calc_walking_cost(drop_off_map, shortest)
     min_drive_cost =  calc_driving_cost(tour, shortest)
     minCost = min_walk_cost + min_drive_cost
     while True:
@@ -189,7 +189,7 @@ def greedy_clustering_three_opt(list_of_locations, list_of_homes, starting_car_l
             minCost = bestCost
             tour = bestTour
             stops = stops + bestStop
- 
+
             #sys.stdout.write(str(minCost) + '\n')  # same as print
             #sys.stdout.flush()
         else:
@@ -218,7 +218,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    min_walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    min_walk_cost = calc_walking_cost(drop_off_map, shortest)
     min_drive_cost =  calc_driving_cost(tour, shortest)
     minCost = min_walk_cost + min_drive_cost
     while True:
@@ -273,9 +273,9 @@ def greedy_clustering_three_opt_best_ratio(list_of_locations, list_of_homes, sta
     stops = [int(starting_car_location)]
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
-    
+
     drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
-    walk_cost = calc_walking_cost(drop_off_map, shortest) 
+    walk_cost = calc_walking_cost(drop_off_map, shortest)
     drive_cost =  calc_driving_cost(tour, shortest)
     bestCost = walk_cost + drive_cost
     while True:
@@ -300,7 +300,7 @@ def greedy_clustering_three_opt_best_ratio(list_of_locations, list_of_homes, sta
                 walk_cost = new_walk_cost
                 drive_cost = new_drive_cost
                 bestCost = new_walk_cost + new_drive_cost
-        
+
 
         if best_ratio > 0:
             for b in bestStop:
@@ -316,7 +316,7 @@ def greedy_clustering_three_opt_best_ratio(list_of_locations, list_of_homes, sta
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
     print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
-    return car_path, drop_off            
+    return car_path, drop_off
 
 
 def christofides(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
@@ -325,7 +325,7 @@ def christofides(list_of_locations, list_of_homes, starting_car_location, adjace
 def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix):
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
     all_pairs_shortest_path = dict(nx.floyd_warshall(G))
-    _, tour = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G) 
+    _, tour = nearest_neighbor_tour(list_of_homes, starting_car_location, all_pairs_shortest_path, G)
     tour = tour[1:]
     newGraph = build_tour_graph(G, tour, all_pairs_shortest_path)
     solution = ant_colony_tour(newGraph, starting_car_location)
@@ -335,7 +335,7 @@ def ant_colony(list_of_locations, list_of_homes, starting_car_location, adjacenc
     utils.write_data_to_file('logs/ant_colony.log', [cost], separator = '\n', append = True)
     print(len(list_of_locations),'locations', 'ant_colony:', cost)
     return car_path, drop_off
-    
+
 
 """
 finds a tour greedily
@@ -345,7 +345,7 @@ Input:
     adjacency_matrix: graph representation
 Output:
     A list that contains the visited locations in order
-""" 
+"""
 def nearest_neighbor_tour(locations, starting_car_location, all_pairs_shortest_path, G):
     if len(locations) == 1:
         return [starting_car_location]
@@ -406,7 +406,7 @@ Input:
     all_pairs_shortest_path: shortest paths between all pairs of vertices
 Output:
     an optimal drop off mapping of homes to the vertices visited in the tour
-""" 
+"""
 def find_drop_off_mapping(tour, list_of_homes, all_pairs_shortest_path):
     drop_off_mapping = dict()
     shortest = all_pairs_shortest_path
@@ -443,7 +443,7 @@ def calculateGain(tour, i, j, k, shortest):
     d5 = AD + CE + BF
     d6 = AE + BD + CF
     d7 = AE + CD + BF
-    
+
     # d0 = shortest[A][B] + shortest[C][D] + shortest[E][F]
     # d1 = shortest[A][B] + shortest[C][E] + shortest[D][F]
     # d2 = shortest[A][C] + shortest[B][D] + shortest[E][F]
@@ -453,7 +453,7 @@ def calculateGain(tour, i, j, k, shortest):
     # d6 = shortest[A][E] + shortest[D][B] + shortest[C][F]
     # d7 = shortest[A][E] + shortest[D][C] + shortest[B][F]
 
-    
+
     swapList = [(d0, 0), (d1, 1), (d2, 2), (d3, 3), (d4, 4), (d5, 5), (d6, 6),(d7, 7)]
     #minSwap = min(swapList, key = lambda x: x[0])
     minSwap = min(swapList)
@@ -619,6 +619,24 @@ def calc_driving_cost(tour, all_pairs_shortest):
 ======================================================================
 """
 
+def get_adjacency_matrix(input_file):
+    input_data = utils.read_file(input_file)
+    num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    shortest =  dict(nx.floyd_warshall(G))
+    graph = build_tour_graph(G, list_houses, shortest)
+    matrx = nx.to_numpy_matrix(graph)
+    ls = matrx.tolist()
+    res = ''
+    for l in ls:
+        st = ''
+        for i in l:
+            #i = i * 100000
+            i = int(i)
+            st = st + str(i) + ' '
+        res = res + st + '\n'
+    utils.write_to_file('matrix_test.out', res)
+
 """
 Convert solution with path and dropoff_mapping in terms of indices
 and write solution output in terms of names to path_to_file + file_number + '.out'
@@ -629,7 +647,7 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
         string += list_locs[node] + ' '
     string = string.strip()
     string += '\n'
-    
+
     dropoffNumber = len(dropoff_mapping.keys())
     string += str(dropoffNumber) + '\n'
     for dropoff in dropoff_mapping.keys():
@@ -643,7 +661,7 @@ def convertToFile(path, dropoff_mapping, path_to_file, list_locs):
 
 def solve_from_file(input_file, output_directory, params=[]):
     print('Processing', input_file)
-    
+
     input_data = utils.read_file(input_file)
     num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
     car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
@@ -653,12 +671,12 @@ def solve_from_file(input_file, output_directory, params=[]):
     output_file = f'{output_directory}/{output_filename}'
     if not os.path.exists(output_directory):
         os.makedirs(output_directory)
-    
+
     convertToFile(car_path, drop_offs, output_file, list_locations)
 
 def improve_from_file(input_file, output_directory, parapms = []):
     print('Processing %s' % (input_file))
-    
+
     input_data = utils.read_file(input_file)
     num_of_locations, num_houses, list_locations, list_houses, starting_car_location, adjacency_matrix = data_parser(input_data)
     car_path, drop_offs = solve(list_locations, list_houses, starting_car_location, adjacency_matrix, params=params)
@@ -728,6 +746,3 @@ if __name__=="__main__":
     else:
         input_file = args.input
         solve_from_file(input_file, output_directory, params=args.params)
-
-
-        
