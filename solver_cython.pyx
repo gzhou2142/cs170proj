@@ -13,6 +13,7 @@ import student_utils
 import acopy as aco
 import itertools
 import time
+import simulated_annealing as sa
 
 """
 ======================================================================
@@ -77,8 +78,36 @@ def solve(list_of_locations, list_of_homes, starting_car_location, adjacency_mat
         car_path,drop_off = remove_swap(locations, homes, start, adjacency_matrix, int(params[1]))
         print("--- %s seconds ---" % (time.time() - start_time))
         return car_path, drop_off
+    elif params[0] == 'sim_anneal':
+        car_path,drop_off = sim_anneal(locations, homes, start, adjacency_matrix, int(params[1]))
+        print("--- %s seconds ---" % (time.time() - start_time))
+        return car_path, drop_off
     else:
         pass
+
+def sim_anneal(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
+    G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    shortest = dict(nx.floyd_warshall(G))
+    homes = set(list_of_homes)
+    homes.add(starting_car_location)
+    simA = sa.simulated_annealing(list(homes), shortest)
+    #simA.batch_anneal()
+    for i in range(1, bus_stop_look_ahead + 1):
+        simA.T = simA.T_save
+        simA.iteration = 1
+        simA.cur_solution, simA.cur_fitness = simA.initial_solution()
+        simA.anneal()
+        #print(simA.get_cost())
+
+    car_path = simA.get_solution()
+    #print(car_path)
+    start_index = car_path.index(starting_car_location)
+    car_path = car_path[start_index:] + car_path[:start_index] + [starting_car_location]
+    car_path = generate_full_path(car_path, G)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, shortest)
+    return car_path, drop_off
+
+
 
 """
 makes everyone walk back home.
