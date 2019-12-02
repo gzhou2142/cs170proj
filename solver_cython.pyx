@@ -319,9 +319,11 @@ def remove_swap(list_of_locations, list_of_homes, starting_car_location, adjacen
 Greedy clustering using two opt local seearch.
 """
 def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_location, adjacency_matrix, bus_stop_look_ahead):
+
     G, _ = adjacency_matrix_to_graph(adjacency_matrix)
+    starting_car_location = int(starting_car_location)
     shortest = dict(nx.floyd_warshall(G))
-    tour = [int(starting_car_location)]
+    cdef list tour = [starting_car_location]
     remain_bus_stop = set([int(l) for l in list_of_locations])
     remain_bus_stop.remove(int(starting_car_location))
     drop_off_map = find_drop_off_mapping(tour, list_of_homes, shortest)
@@ -329,7 +331,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
     #min_drive_cost =  calc_driving_cost(tour, shortest)
     #minCost = min_walk_cost + min_drive_cost
     cdef double minCost = calc_walking_cost(drop_off_map, shortest) + calc_driving_cost(tour, shortest)
-    cdef int loop = 1
+    cdef loop = 1
     while loop:
         bestTour = None
         bestStop = None
@@ -337,29 +339,43 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
         bstops = findsubsets(remain_bus_stop, bus_stop_look_ahead)
         for bstop in bstops:
             new_tour = tour + bstop
-            new_drop_off_map = find_drop_off_mapping(new_tour, list_of_homes, shortest)
             new_tour = fast_nearest_neighbor_tour(new_tour, starting_car_location,shortest)
-            new_tour = two_opt(new_tour, shortest)
-            new_cost = calc_walking_cost(new_drop_off_map, shortest) + calc_driving_cost(new_tour, shortest)
+            new_tour = three_opt(new_tour, shortest)
+            start_index = new_tour.index(starting_car_location)
+            new_tour = new_tour[start_index:] + new_tour[:start_index]
+            t_tour = new_tour + [starting_car_location]
+            #need to generate full graph for drop off calculation
+            full_path = generate_full_path(t_tour, G)
+            new_drop_off_map = find_drop_off_mapping(full_path, list_of_homes, shortest)
+            new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
+            new_drive_cost = calc_driving_cost(t_tour, shortest)
+            new_cost = new_walk_cost + new_drive_cost
             if new_cost < bestCost:
                 bestStop = bstop
                 bestCost = new_cost
                 bestTour = new_tour
+            #print(tour)
+        print(minCost)
         if bestCost < minCost:
             for b in bestStop:
-                remain_bus_stop.remove(b)
+                remain_bus_stop.remove(int(b))
             minCost = bestCost
             tour = bestTour
-
+            # sys.stdout.write(str(minCost) + '\n')  # same as print
+            # sys.stdout.flush()
         else:
             loop = 0
+
     tour = three_opt(tour, shortest)
+    tour = tour + [starting_car_location]
     car_path = generate_full_path(tour, G)
-    drop_off = find_drop_off_mapping(tour, list_of_homes, shortest)
+    drop_off = find_drop_off_mapping(car_path, list_of_homes, shortest)
     cost, _ = student_utils.cost_of_solution(G, car_path, drop_off)
     #utils.write_data_to_file('logs/greedy_clustering_three_opt.log', [cost], separator = '\n', append = True)
-    #print(len(list_of_locations),'locations', 'greedy_clustering_two_opt:', cost)
+    #print(len(list_of_locations),'locations', 'greedy_clustering_three_opt:', cost)
     return car_path, drop_off
+
+    
 
 
 
