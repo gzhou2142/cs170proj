@@ -345,8 +345,8 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
             new_tour = new_tour[start_index:] + new_tour[:start_index]
             t_tour = new_tour + [starting_car_location]
             #need to generate full graph for drop off calculation
-            full_path = generate_full_path(t_tour, G)
-            new_drop_off_map = find_drop_off_mapping(full_path, list_of_homes, shortest)
+            #full_path = generate_full_path(t_tour, G)
+            new_drop_off_map = find_drop_off_mapping(t_tour, list_of_homes, shortest)
             new_walk_cost = calc_walking_cost(new_drop_off_map, shortest)
             new_drive_cost = calc_driving_cost(t_tour, shortest)
             new_cost = new_walk_cost + new_drive_cost
@@ -355,7 +355,7 @@ def greedy_clustering_two_opt(list_of_locations, list_of_homes, starting_car_loc
                 bestCost = new_cost
                 bestTour = new_tour
             #print(tour)
-        print(minCost)
+        #print(minCost)
         if bestCost < minCost:
             for b in bestStop:
                 remain_bus_stop.remove(int(b))
