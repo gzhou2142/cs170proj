@@ -828,9 +828,9 @@ def build_tour_graph(G, tour, all_pairs_shortest_path):
 finds TSP tour using ant colony optimization
 """
 def ant_colony_tour(G, start):
-    solver = aco.Solver(rho=0.1, q = 1)
-    colony = aco.Colony(alpha = 1, beta = 3)
-    tour = solver.solve(G, colony, limit = 500, gen_size = 1000)#, gen_size = 100)
+    solver = aco.Solver(rho=0.05, q = 1)
+    colony = aco.Colony(alpha = 1, beta = 10)
+    tour = solver.solve(G, colony, limit = 500)#, gen_size = 100)
     tour_list = tour.nodes
     start_index = tour_list.index(int(start))
     tour_list = tour_list[start_index:] + tour_list [:start_index] + [int(start)]
