@@ -90,17 +90,16 @@ def sim_anneal(list_of_locations, list_of_homes, starting_car_location, adjacenc
     shortest = dict(nx.floyd_warshall(G))
     homes = set(list_of_homes)
     homes.add(starting_car_location)
-    simA = sa.simulated_annealing(list(homes), shortest)
-    #simA.batch_anneal()
+    simA = sa.simulated_annealing(list_of_locations, list(homes), starting_car_location, shortest)
+    
     for i in range(1, bus_stop_look_ahead + 1):
         simA.T = simA.T_save
         simA.iteration = 1
         simA.cur_solution, simA.cur_fitness = simA.initial_solution()
         simA.anneal()
         #print(simA.get_cost())
-
+    
     car_path = simA.get_solution()
-    #print(car_path)
     start_index = car_path.index(starting_car_location)
     car_path = car_path[start_index:] + car_path[:start_index] + [starting_car_location]
     car_path = generate_full_path(car_path, G)
@@ -847,9 +846,8 @@ def calc_walking_cost(dropoff_mapping, all_pair_shortest):
             walking_cost += all_pair_shortest[drop_location][house]
     return walking_cost
 
-cdef double calc_driving_cost(tour, all_pairs_shortest):
+def calc_driving_cost(tour, all_pairs_shortest):
     cdef double driving_cost = 0.0
-    #cdef double ratio = 2
     if len(tour) == 1:
         return driving_cost
     else:
